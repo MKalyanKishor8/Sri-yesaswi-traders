@@ -3,389 +3,438 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Enterprise Portal | Sri Yesaswi Traders — India's Direct Agro Commodity Source</title>
-  <meta name="description" content="B2B Trade Portal for verified importers, food processors, and bulk buyers. Access price locks, live RFQs, and export spec sheets from Sri Yesaswi Traders." />
+  <title>Sri Yesaswi Traders — Enterprise Trade & Login Portal</title>
+  <meta name="description" content="Official Enterprise Portal for Sri Yesaswi Traders. Direct Agro Commodity Export House — Rajma Seeds, Finger Turmeric, Green Coffee, Black Pepper, Dried Ginger." />
+
+  <!-- Google Fonts: Luxury Serif & Modern Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Firebase SDKs -->
+
+  <!-- Firebase App & Services SDKs (v10.8.0 Compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <script src="firebase-config.js"></script>
 
   <style>
+    /* ==========================================================================
+       LUXURY DESIGN TOKENS & COLOR THEME (Matched to logo.mp4)
+       ========================================================================== */
     :root {
+      --bg-midnight: #050b14;
+      --navy-deep: #0a192f;
+      --navy-wall: #0d223d;
+      --navy-card: rgba(8, 20, 38, 0.88);
+      --navy-input: rgba(5, 14, 28, 0.85);
+
       --gold: #d4af37;
-      --gold-light: #f0d060;
-      --gold-dark: #a8892a;
-      --navy: #0a192f;
-      --navy-mid: #0d2342;
-      --navy-card: #112240;
-      --primary: #0f4c81;
+      --gold-light: #fbe696;
+      --gold-shimmer: #fff2c4;
+      --gold-dark: #9a7b20;
+      --gold-glow: rgba(212, 175, 55, 0.35);
+      --gold-border: rgba(212, 175, 55, 0.4);
+
       --white: #ffffff;
-      --off-white: #f8f9fa;
-      --text-dark: #1e293b;
-      --text-muted: #64748b;
-      --border: rgba(212, 175, 55, 0.2);
-      --border-light: rgba(255,255,255,0.08);
-      --success: #10b981;
+      --text-soft: #cbd5e1;
+      --text-muted: #8497ad;
       --danger: #ef4444;
-      --font-display: 'Playfair Display', Georgia, serif;
-      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --success: #10b981;
+
+      --font-serif-royal: 'Cinzel', serif;
+      --font-serif-body: 'Playfair Display', Georgia, serif;
       --font-ui: 'Outfit', sans-serif;
+      --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+
       --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
-      --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+      --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    html { font-size: 16px; }
-
-    body {
-      font-family: var(--font-body);
-      background: var(--navy);
-      color: var(--white);
-      min-height: 100vh;
-      overflow-x: hidden;
-      display: flex;
-      flex-direction: column;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* ====================================================
-       LAYOUT — SPLIT SCREEN
-    ==================================================== */
-    .auth-layout {
-      display: grid;
-      grid-template-columns: 1fr 520px;
-      min-height: 100vh;
-    }
-
-    /* ====================================================
-       LEFT PANEL — BRAND STORY & TRUST SIGNALS
-    ==================================================== */
-    .brand-panel {
-      position: relative;
-      background: var(--navy);
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      overflow: hidden;
-    }
-
-    .brand-panel-bg {
-      position: absolute;
-      inset: 0;
-      background-image: url('auth_hero.jpg');
-      background-size: cover;
-      background-position: center;
-      z-index: 0;
-    }
-
-    .brand-panel-video {
-      position: absolute;
-      inset: 0;
+    html, body {
       width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0.4;
+      min-height: 100vh;
+      background-color: var(--bg-midnight);
+      color: var(--white);
+      font-family: var(--font-body);
+      overflow-x: hidden;
+    }
+
+    /* ==========================================================================
+       BACKGROUND: NAVY TEXTURE & GOLDEN STARDUST CANVAS
+       ========================================================================== */
+    .ambient-bg-layer {
+      position: fixed;
+      inset: 0;
       z-index: 0;
+      background:
+        radial-gradient(ellipse at 50% 35%, #143156 0%, #09172a 45%, #030812 100%),
+        linear-gradient(to bottom, rgba(5, 11, 20, 0.4) 0%, rgba(3, 8, 18, 0.95) 100%);
       pointer-events: none;
     }
 
-    .brand-panel-overlay {
-      position: absolute;
+    /* Ambient Classic Wall Panel Lines */
+    .wall-panels-backdrop {
+      position: fixed;
       inset: 0;
-      background: linear-gradient(
-        to bottom,
-        rgba(10, 25, 47, 0.4) 0%,
-        rgba(10, 25, 47, 0.65) 40%,
-        rgba(10, 25, 47, 0.94) 75%,
-        rgba(10, 25, 47, 0.99) 100%
-      );
       z-index: 1;
+      pointer-events: none;
+      background-image:
+        linear-gradient(90deg, rgba(212, 175, 55, 0.03) 1px, transparent 1px),
+        linear-gradient(rgba(212, 175, 55, 0.03) 1px, transparent 1px);
+      background-size: 80px 80px;
+      mask-image: radial-gradient(circle at center, black 40%, transparent 85%);
+      -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 85%);
+      opacity: 0.7;
     }
 
-    .brand-panel-content {
-      position: relative;
+    /* Floating Stardust Canvas */
+    #stardustCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
       z-index: 2;
-      padding: 2.5rem 3rem;
     }
 
-    .brand-logo-mark {
-      display: inline-flex;
+    /* ==========================================================================
+       TOP HUD BAR (Header Navigation, Replay, Sound)
+       ========================================================================== */
+    .portal-hud-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 2rem;
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    .portal-hud-bar * {
+      pointer-events: auto;
+    }
+
+    .hud-crest-badge {
+      display: flex;
       align-items: center;
       gap: 0.75rem;
-      margin-bottom: 2.5rem;
+      background: rgba(8, 20, 38, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--gold-border);
+      padding: 0.45rem 1.15rem;
+      border-radius: 40px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5), inset 0 0 15px rgba(212, 175, 55, 0.1);
+      cursor: pointer;
+      transition: all 0.3s ease;
     }
 
-    .logo-emblem {
-      width: 48px;
-      height: 48px;
-      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
-      border-radius: 12px;
+    .hud-crest-badge:hover {
+      border-color: var(--gold-light);
+      box-shadow: 0 6px 25px rgba(212, 175, 55, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .mini-sy-logo {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--gold-dark));
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 8px 24px rgba(212, 175, 55, 0.4);
-    }
-
-    .logo-text-block .brand-name {
-      font-family: var(--font-ui);
-      font-size: 1.25rem;
+      font-family: var(--font-serif-royal);
       font-weight: 800;
-      color: var(--white);
-      line-height: 1.1;
-      letter-spacing: -0.01em;
+      font-size: 0.75rem;
+      color: #07192f;
+      box-shadow: 0 0 10px rgba(212, 175, 55, 0.6);
     }
 
-    .logo-text-block .brand-tag {
-      font-size: 0.7rem;
-      font-weight: 600;
-      letter-spacing: 0.22em;
-      color: var(--gold);
+    .hud-title-wrap {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .hud-title {
+      font-family: var(--font-serif-royal);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--gold-shimmer);
       text-transform: uppercase;
     }
 
-    .brand-headline {
-      font-family: var(--font-display);
-      font-size: clamp(1.9rem, 2.8vw, 3.2rem);
-      font-weight: 800;
-      line-height: 1.15;
-      color: var(--white);
-      margin-bottom: 1.25rem;
+    .hud-sub {
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      color: rgba(255, 255, 255, 0.7);
+      text-transform: uppercase;
     }
 
-    .brand-headline em {
-      color: var(--gold);
-      font-style: normal;
-    }
-
-    .brand-desc {
-      font-size: 0.95rem;
-      color: rgba(255,255,255,0.65);
-      line-height: 1.7;
-      max-width: 480px;
-      margin-bottom: 2rem;
-    }
-
-    /* Commodity Tags */
-    .commodity-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 2rem;
-    }
-
-    .commodity-tag {
-      padding: 0.35rem 0.85rem;
-      border: 1px solid rgba(212, 175, 55, 0.35);
-      background: rgba(212, 175, 55, 0.08);
-      border-radius: 30px;
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--gold);
-      letter-spacing: 0.03em;
-    }
-
-    /* Trust Signals Row */
-    .trust-row {
-      display: flex;
-      gap: 1.5rem;
-      flex-wrap: wrap;
-      margin-bottom: 2.5rem;
-    }
-
-    .trust-badge {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.78rem;
-      color: rgba(255,255,255,0.6);
-    }
-
-    .trust-badge strong {
-      color: rgba(255,255,255,0.9);
-    }
-
-    .trust-icon {
-      width: 28px;
-      height: 28px;
-      background: rgba(212, 175, 55, 0.12);
-      border: 1px solid rgba(212, 175, 55, 0.3);
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--gold);
-      flex-shrink: 0;
-    }
-
-    /* Testimonial block */
-    .brand-testimonial {
-      background: rgba(212, 175, 55, 0.06);
-      border: 1px solid rgba(212, 175, 55, 0.18);
-      border-radius: 12px;
-      padding: 1.25rem 1.5rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .testimonial-text {
-      font-family: var(--font-display);
-      font-size: 0.95rem;
-      font-style: italic;
-      color: rgba(255,255,255,0.8);
-      line-height: 1.6;
-      margin-bottom: 0.75rem;
-    }
-
-    .testimonial-attr {
+    .hud-controls-group {
       display: flex;
       align-items: center;
       gap: 0.65rem;
     }
 
-    .testi-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--primary), #1e6cb0);
+    .hud-control-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.45rem 1rem;
+      background: rgba(8, 20, 38, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      border-radius: 30px;
+      color: rgba(255, 255, 255, 0.9);
+      font-family: var(--font-ui);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      transition: all 0.25s var(--ease-smooth);
+    }
+
+    .hud-control-btn:hover {
+      background: rgba(212, 175, 55, 0.22);
+      border-color: var(--gold-light);
+      color: var(--gold-shimmer);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 22px rgba(212, 175, 55, 0.3);
+    }
+
+    .hud-control-btn.active {
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.35), rgba(15, 76, 129, 0.5));
+      border-color: var(--gold-light);
+      color: var(--white);
+    }
+
+    /* ==========================================================================
+       CINEMATIC FULL-SCREEN INTRO THEATER (logo.mp4 initial animation)
+       ========================================================================== */
+    .cinematic-intro-theater {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 800;
-      font-size: 0.95rem;
-      color: var(--white);
-      flex-shrink: 0;
+      background-color: #030812;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.85s var(--ease-smooth), visibility 0.85s var(--ease-smooth);
     }
 
-    .testi-name {
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: var(--white);
+    .cinematic-intro-theater.theater-closed {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
     }
 
-    .testi-role {
-      font-size: 0.72rem;
-      color: rgba(255,255,255,0.5);
+    .intro-video-element {
+      width: 100%;
+      height: 100%;
+      max-width: 100vw;
+      max-height: 100vh;
+      object-fit: contain;
+      outline: none;
     }
 
-    /* Founder strip */
-    .founder-strip {
-      border-top: 1px solid rgba(255,255,255,0.08);
-      padding-top: 1.5rem;
-      display: flex;
+    .theater-skip-btn {
+      position: absolute;
+      bottom: 35px;
+      right: 35px;
+      display: inline-flex;
       align-items: center;
-      gap: 0.75rem;
-    }
-
-    .founder-avatar {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid var(--gold);
-    }
-
-    .founder-avatar-fallback {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
-      color: var(--navy);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 900;
-      font-size: 1.1rem;
-      border: 2px solid var(--gold);
-      flex-shrink: 0;
-    }
-
-    .founder-info .founder-name {
+      gap: 0.6rem;
+      background: rgba(8, 20, 38, 0.85);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--gold-border);
+      padding: 0.65rem 1.6rem;
+      border-radius: 40px;
+      color: var(--gold-light);
+      font-family: var(--font-serif-royal);
       font-size: 0.85rem;
       font-weight: 700;
-      color: var(--white);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.25);
+      transition: all 0.3s var(--ease-smooth);
+      z-index: 90;
     }
 
-    .founder-info .founder-title {
-      font-size: 0.72rem;
-      color: rgba(255,255,255,0.5);
+    .theater-skip-btn:hover {
+      background: rgba(212, 175, 55, 0.28);
+      border-color: var(--gold-shimmer);
+      color: #ffffff;
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 12px 35px rgba(212, 175, 55, 0.45);
     }
 
-    /* ====================================================
-       RIGHT PANEL — AUTH FORM AREA
-    ==================================================== */
-    .auth-panel {
-      background: var(--white);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      overflow-y: auto;
+    /* ==========================================================================
+       MAIN LOGIN CARD & INTEGRATED VIDEO LOGO ANIMATION (logo.mp4)
+       ========================================================================== */
+    .portal-workspace-stage {
       position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5.5rem 1.5rem 2.5rem;
+      z-index: 10;
     }
 
-    /* Subtle pattern top of auth panel */
-    .auth-panel::before {
+    .portal-master-card {
+      position: relative;
+      width: 100%;
+      max-width: 530px;
+      background: var(--navy-card);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      border: 1px solid rgba(212, 175, 55, 0.45);
+      border-radius: 22px;
+      box-shadow:
+        0 25px 75px rgba(0, 0, 0, 0.85),
+        0 0 50px rgba(212, 175, 55, 0.16),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18),
+        inset 0 0 35px rgba(7, 18, 36, 0.65);
+      overflow: hidden;
+      animation: cardAppear 0.9s var(--ease-smooth);
+    }
+
+    @keyframes cardAppear {
+      from { opacity: 0; transform: translateY(25px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Animated Gold Light Beam on Card Top */
+    .portal-master-card::before {
       content: '';
       position: absolute;
       top: 0;
       left: 0;
       right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 50%, var(--gold) 100%);
+      height: 3px;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        var(--gold-dark) 20%,
+        var(--gold-shimmer) 50%,
+        var(--gold-dark) 80%,
+        transparent 100%
+      );
+      background-size: 200% 100%;
+      animation: goldBeam 4s linear infinite;
+      z-index: 5;
     }
 
-    .auth-panel-inner {
-      padding: 2.5rem 2.75rem;
+    @keyframes goldBeam {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
     }
 
-    /* Step indicator bar */
-    .auth-step-label {
+    /* ─── INTEGRATED LOGO VIDEO HERO BANNER (logo.mp4) ─── */
+    .card-video-hero {
+      position: relative;
+      width: 100%;
+      height: 200px;
+      background: #030812;
+      overflow: hidden;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.35);
+      cursor: pointer;
+    }
+
+    .card-video-element {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.6s var(--ease-smooth);
+    }
+
+    .card-video-hero:hover .card-video-element {
+      transform: scale(1.03);
+    }
+
+    /* Video Vignette & Bottom Blending Gradient */
+    .card-video-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at center, transparent 40%, rgba(3, 8, 18, 0.45) 85%),
+        linear-gradient(to bottom, transparent 65%, rgba(8, 20, 38, 0.95) 100%);
+    }
+
+    /* Video Replay Hint Badge */
+    .card-video-replay-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(5, 14, 28, 0.75);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      padding: 0.3rem 0.7rem;
+      border-radius: 20px;
+      color: var(--gold-light);
       font-family: var(--font-ui);
-      font-size: 0.7rem;
+      font-size: 0.72rem;
       font-weight: 700;
-      letter-spacing: 0.2em;
-      color: var(--gold-dark);
-      text-transform: uppercase;
-      margin-bottom: 0.5rem;
+      letter-spacing: 0.04em;
+      opacity: 0.85;
+      transition: all 0.25s ease;
+      z-index: 6;
     }
 
-    .auth-panel-title {
-      font-family: var(--font-display);
-      font-size: 1.9rem;
-      font-weight: 800;
-      color: var(--navy);
-      line-height: 1.2;
-      margin-bottom: 0.35rem;
+    .card-video-hero:hover .card-video-replay-badge {
+      opacity: 1;
+      background: rgba(212, 175, 55, 0.25);
+      border-color: var(--gold-light);
+      transform: scale(1.05);
     }
 
-    .auth-panel-sub {
-      font-size: 0.88rem;
-      color: var(--text-muted);
-      line-height: 1.55;
-      margin-bottom: 1.75rem;
+    /* ─── CARD CONTENT BODY ─── */
+    .card-content-body {
+      padding: 1.75rem 2.25rem 2rem;
+      position: relative;
     }
 
-    /* MODE SWITCHER TABS */
-    .auth-tabs {
+    /* Mode Switcher Tabs */
+    .auth-mode-tabs {
       display: flex;
-      background: #f1f5f9;
-      padding: 0.35rem;
+      background: rgba(5, 14, 28, 0.85);
+      border: 1px solid rgba(212, 175, 55, 0.22);
       border-radius: 10px;
+      padding: 0.3rem;
       gap: 0.25rem;
-      margin-bottom: 1.75rem;
+      margin-bottom: 1.5rem;
     }
 
-    .auth-tab {
+    .auth-tab-btn {
       flex: 1;
-      padding: 0.6rem 0.5rem;
-      border: none;
+      padding: 0.55rem 0.35rem;
       background: transparent;
+      border: none;
       border-radius: 7px;
       font-family: var(--font-ui);
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       font-weight: 700;
       color: var(--text-muted);
       cursor: pointer;
@@ -393,1100 +442,1101 @@
       align-items: center;
       justify-content: center;
       gap: 0.35rem;
-      transition: all 0.25s var(--ease-in-out);
+      transition: all 0.25s var(--ease-smooth);
       white-space: nowrap;
     }
 
-    .auth-tab.active {
-      background: var(--white);
-      color: var(--navy);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    .auth-tab-btn:hover {
+      color: var(--white);
+      background: rgba(255, 255, 255, 0.05);
     }
 
-    .auth-tab.active.admin-tab {
-      color: #991b1b;
+    .auth-tab-btn.active {
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.28), rgba(15, 76, 129, 0.45));
+      border: 1px solid var(--gold-border);
+      color: var(--gold-shimmer);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3), 0 0 12px rgba(212, 175, 55, 0.18);
     }
 
-    /* GOOGLE BUTTON */
-    .btn-google {
+    .auth-tab-btn.admin-tab.active {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(127, 29, 29, 0.45));
+      border-color: rgba(239, 68, 68, 0.45);
+      color: #fca5a5;
+    }
+
+    /* Google SSO Button */
+    .btn-google-sso {
       width: 100%;
-      padding: 0.8rem 1rem;
-      background: var(--white);
-      border: 1.5px solid #e2e8f0;
-      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      background: rgba(10, 25, 47, 0.8);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 9px;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 0.75rem;
       cursor: pointer;
       font-family: var(--font-ui);
-      font-size: 0.95rem;
+      font-size: 0.88rem;
       font-weight: 600;
-      color: #1e293b;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      transition: all 0.25s var(--ease-in-out);
-      position: relative;
-      overflow: hidden;
+      color: var(--white);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+      transition: all 0.25s var(--ease-smooth);
     }
 
-    .btn-google::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: #f8fafc;
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-
-    .btn-google:hover::before { opacity: 1; }
-
-    .btn-google:hover {
-      border-color: #94a3b8;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    .btn-google-sso:hover {
+      background: rgba(212, 175, 55, 0.18);
+      border-color: var(--gold-light);
+      box-shadow: 0 6px 20px rgba(212, 175, 55, 0.28);
       transform: translateY(-1px);
     }
 
-    .google-icon {
-      flex-shrink: 0;
-      position: relative;
-      z-index: 1;
-    }
-
-    .btn-google span { position: relative; z-index: 1; }
-
-    /* Divider */
-    .auth-divider {
+    .divider-gold-line {
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      margin: 1.25rem 0;
-      color: #94a3b8;
-      font-size: 0.78rem;
+      margin: 1.15rem 0;
+      color: var(--text-muted);
+      font-size: 0.72rem;
       font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
 
-    .auth-divider::before,
-    .auth-divider::after {
+    .divider-gold-line::before,
+    .divider-gold-line::after {
       content: '';
       flex: 1;
       height: 1px;
-      background: #e2e8f0;
+      background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.3), transparent);
     }
 
-    /* FORM ELEMENTS */
-    .form-row {
+    /* Form Fields */
+    .form-group-item {
+      margin-bottom: 0.95rem;
+    }
+
+    .form-group-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 0.85rem;
+      gap: 0.75rem;
+      margin-bottom: 0.95rem;
     }
 
-    .form-group {
-      margin-bottom: 1rem;
-    }
-
-    .form-label {
-      display: block;
-      font-family: var(--font-ui);
-      font-size: 0.775rem;
-      font-weight: 700;
-      color: #374151;
-      margin-bottom: 0.35rem;
-      letter-spacing: 0.01em;
-    }
-
-    .form-field-wrap {
-      position: relative;
-    }
-
-    .field-icon {
-      position: absolute;
-      left: 0.9rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #94a3b8;
-      pointer-events: none;
-      display: flex;
-      align-items: center;
-    }
-
-    .field-input {
-      width: 100%;
-      padding: 0.72rem 1rem 0.72rem 2.5rem;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 9px;
-      font-family: var(--font-body);
-      font-size: 0.9rem;
-      color: var(--text-dark);
-      background: #f8fafc;
-      transition: all 0.2s var(--ease-in-out);
-      outline: none;
-    }
-
-    .field-input::placeholder { color: #94a3b8; }
-
-    .field-input:focus {
-      border-color: var(--primary);
-      background: var(--white);
-      box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.1);
-    }
-
-    .field-input.no-icon {
-      padding-left: 1rem;
-    }
-
-    .field-input.gold-focus:focus {
-      border-color: var(--gold-dark);
-      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.12);
-    }
-
-    .pw-toggle {
-      position: absolute;
-      right: 0.9rem;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: #94a3b8;
-      display: flex;
-      align-items: center;
-      padding: 0;
-    }
-
-    .pw-toggle:hover { color: var(--text-dark); }
-
-    select.field-input {
-      appearance: none;
-      cursor: pointer;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 1rem center;
-      padding-right: 2.5rem;
-    }
-
-    /* Form options row */
-    .form-options-row {
+    .field-label {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1.25rem;
-      font-size: 0.82rem;
+      font-family: var(--font-ui);
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--text-soft);
+      letter-spacing: 0.02em;
+      margin-bottom: 0.35rem;
     }
 
-    .checkbox-wrap {
+    .field-input-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .field-input-icon {
+      position: absolute;
+      left: 0.9rem;
+      color: var(--gold);
+      opacity: 0.85;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .field-text-input {
+      width: 100%;
+      padding: 0.72rem 1rem 0.72rem 2.45rem;
+      background: var(--navy-input);
+      border: 1px solid rgba(212, 175, 55, 0.26);
+      border-radius: 9px;
+      font-family: var(--font-body);
+      font-size: 0.88rem;
+      color: var(--white);
+      outline: none;
+      transition: all 0.22s var(--ease-smooth);
+    }
+
+    .field-text-input::placeholder {
+      color: rgba(132, 151, 173, 0.65);
+    }
+
+    .field-text-input:focus {
+      border-color: var(--gold-light);
+      background: rgba(8, 20, 38, 0.96);
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2), 0 0 15px rgba(212, 175, 55, 0.15);
+    }
+
+    .field-text-input.no-icon-padding {
+      padding-left: 0.9rem;
+    }
+
+    select.field-text-input {
+      appearance: none;
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23d4af37' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.9rem center;
+      padding-right: 2.2rem;
+    }
+
+    select.field-text-input option {
+      background-color: var(--navy-deep);
+      color: var(--white);
+    }
+
+    .password-eye-btn {
+      position: absolute;
+      right: 0.8rem;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      padding: 0.2rem;
+      transition: color 0.2s ease;
+    }
+
+    .password-eye-btn:hover {
+      color: var(--gold-light);
+    }
+
+    /* Options Row */
+    .auth-options-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.15rem;
+      font-size: 0.78rem;
+    }
+
+    .auth-checkbox {
       display: flex;
       align-items: center;
       gap: 0.45rem;
       cursor: pointer;
-      color: var(--text-muted);
+      color: var(--text-soft);
+      user-select: none;
     }
 
-    .checkbox-wrap input[type="checkbox"] {
-      accent-color: var(--primary);
+    .auth-checkbox input[type="checkbox"] {
+      accent-color: var(--gold);
       width: 14px;
       height: 14px;
-    }
-
-    .link-forgot {
-      color: var(--primary);
-      font-weight: 700;
       cursor: pointer;
-      text-decoration: none;
     }
 
-    .link-forgot:hover { text-decoration: underline; }
+    .gold-link {
+      color: var(--gold-light);
+      font-weight: 600;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
 
-    /* PRIMARY & ADMIN BUTTONS */
-    .btn-primary {
+    .gold-link:hover {
+      color: #ffffff;
+      text-decoration: underline;
+    }
+
+    /* Primary Submit Button */
+    .btn-submit-gold {
       width: 100%;
-      padding: 0.88rem 1rem;
-      border: none;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #0f4c81 0%, #082d4f 100%);
-      color: var(--white);
-      font-family: var(--font-ui);
-      font-size: 1rem;
-      font-weight: 700;
+      padding: 0.85rem 1.25rem;
+      border: 1px solid var(--gold-light);
+      border-radius: 9px;
+      background: linear-gradient(135deg, #d4af37 0%, #b38f22 50%, #8c6a12 100%);
+      color: #07192f;
+      font-family: var(--font-serif-royal);
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 0.6rem;
-      box-shadow: 0 4px 15px rgba(15, 76, 129, 0.35);
-      transition: all 0.25s var(--ease-in-out);
+      box-shadow:
+        0 6px 20px rgba(0, 0, 0, 0.45),
+        0 0 25px rgba(212, 175, 55, 0.35);
+      transition: all 0.3s var(--ease-smooth);
       position: relative;
       overflow: hidden;
     }
 
-    .btn-primary::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-
-    .btn-primary:hover::after { opacity: 1; }
-
-    .btn-primary:hover {
+    .btn-submit-gold:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(15, 76, 129, 0.45);
+      background: linear-gradient(135deg, #fbe696 0%, #d4af37 50%, #a8892a 100%);
+      box-shadow:
+        0 10px 28px rgba(0, 0, 0, 0.55),
+        0 0 35px rgba(212, 175, 55, 0.55);
     }
 
-    .btn-admin {
-      background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);
-      box-shadow: 0 4px 15px rgba(153, 27, 27, 0.35);
+    .btn-admin-crimson {
+      background: linear-gradient(135deg, #b91c1c 0%, #881337 50%, #450a0a 100%);
+      border-color: #f87171;
+      color: #ffffff;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45), 0 0 20px rgba(239, 68, 68, 0.3);
     }
 
-    .btn-admin:hover {
-      box-shadow: 0 8px 24px rgba(153, 27, 27, 0.45);
+    .btn-admin-crimson:hover {
+      background: linear-gradient(135deg, #dc2626 0%, #991b1b 50%, #581c1c 100%);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55), 0 0 30px rgba(239, 68, 68, 0.45);
     }
 
-    /* LOADING STATE */
-    .btn-primary.loading {
-      pointer-events: none;
-      opacity: 0.8;
-    }
-
-    .spinner {
+    /* Spinner */
+    .loading-spinner {
       width: 18px;
       height: 18px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: white;
+      border: 2px solid rgba(7, 25, 47, 0.3);
+      border-top-color: #07192f;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
     }
-
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ADMIN RESTRICTED BADGE */
-    .admin-badge-bar {
+    /* Admin Clearance Banner */
+    .admin-badge-strip {
       display: flex;
       align-items: center;
       gap: 0.5rem;
       padding: 0.5rem 0.85rem;
-      background: #fee2e2;
-      border-radius: 7px;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-radius: 6px;
       font-size: 0.72rem;
       font-weight: 700;
-      color: #991b1b;
-      margin-bottom: 1.1rem;
+      color: #fca5a5;
+      letter-spacing: 0.04em;
+      margin-bottom: 1rem;
     }
 
-    /* FOOTER BELOW FORM */
-    .auth-form-footer {
-      margin-top: 1.25rem;
-      padding-top: 1.25rem;
-      border-top: 1px solid #f1f5f9;
-      text-align: center;
-      font-size: 0.8rem;
-      color: var(--text-muted);
+    /* Demo Quick Autofill Strip */
+    .demo-autofill-strip {
+      margin-top: 1.15rem;
+      padding: 0.7rem 0.95rem;
+      background: rgba(5, 14, 28, 0.75);
+      border: 1px dashed rgba(212, 175, 55, 0.3);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      font-size: 0.74rem;
+      color: var(--text-soft);
     }
 
-    .auth-form-footer a {
-      color: var(--primary);
+    .demo-fill-btn {
+      background: rgba(212, 175, 55, 0.16);
+      border: 1px solid var(--gold-border);
+      color: var(--gold-light);
+      padding: 0.3rem 0.75rem;
+      border-radius: 6px;
+      font-family: var(--font-ui);
+      font-size: 0.72rem;
       font-weight: 700;
-      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
     }
 
-    .auth-form-footer a:hover { text-decoration: underline; }
+    .demo-fill-btn:hover {
+      background: var(--gold);
+      color: #07192f;
+      box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
+    }
 
-    /* DASHBOARD / POST-LOGIN VIEW */
-    .dashboard-screen {
+    /* OTP Inputs Grid */
+    .otp-inputs-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .otp-box {
+      width: 100%;
+      height: 48px;
+      text-align: center;
+      font-family: var(--font-serif-royal);
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--gold-light);
+      background: var(--navy-input);
+      border: 1.5px solid rgba(212, 175, 55, 0.3);
+      border-radius: 8px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .otp-box:focus {
+      border-color: var(--gold-light);
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.25), 0 0 15px rgba(212, 175, 55, 0.2);
+    }
+
+    /* Post Login Success Screen */
+    .post-login-view {
       display: none;
-      animation: fadeUp 0.4s var(--ease-smooth);
+      animation: fadeIn 0.4s ease;
     }
-
-    @keyframes fadeUp {
+    @keyframes fadeIn {
       from { opacity: 0; transform: translateY(12px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .dash-greeting {
+    .post-user-header {
       display: flex;
       align-items: center;
-      gap: 0.85rem;
+      gap: 1rem;
       padding-bottom: 1.25rem;
-      border-bottom: 1px solid #e2e8f0;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.2);
       margin-bottom: 1.25rem;
     }
 
-    .dash-avatar {
-      width: 50px;
-      height: 50px;
+    .post-avatar-circle {
+      width: 52px;
+      height: 52px;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--primary), #1e6cb0);
-      color: white;
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      color: #07192f;
+      font-family: var(--font-serif-royal);
+      font-size: 1.4rem;
+      font-weight: 800;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 800;
-      font-size: 1.2rem;
+      border: 2px solid var(--gold-light);
+      box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
       flex-shrink: 0;
-      border: 2px solid #e2e8f0;
-      overflow: hidden;
     }
 
-    .dash-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .dash-avatar.admin-av { background: linear-gradient(135deg, #b91c1c, #7f1d1d); }
-
-    .dash-name {
-      font-family: var(--font-display);
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: var(--navy);
-    }
-
-    .dash-role {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-    }
-
-    .dash-grid {
+    .post-stats-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 0.75rem;
-      margin-bottom: 1.1rem;
+      margin-bottom: 1.25rem;
     }
 
-    .dash-stat {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
+    .post-stat-box {
+      background: rgba(5, 14, 28, 0.75);
+      border: 1px solid rgba(212, 175, 55, 0.2);
       border-radius: 10px;
-      padding: 0.85rem;
+      padding: 0.85rem 1rem;
     }
 
-    .dash-stat-val {
-      font-family: var(--font-ui);
-      font-size: 1.3rem;
+    .post-stat-number {
+      font-family: var(--font-serif-royal);
+      font-size: 1.25rem;
       font-weight: 800;
-      color: var(--navy);
-      margin-bottom: 0.15rem;
+      color: var(--gold-light);
     }
 
-    .dash-stat-lbl {
+    .post-stat-label {
       font-size: 0.72rem;
       color: var(--text-muted);
     }
 
-    .dash-activity {
-      display: flex;
-      flex-direction: column;
-      gap: 0.55rem;
-      margin-bottom: 1.25rem;
-    }
-
-    .dash-activity-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 0.75rem;
-      padding: 0.7rem 0.9rem;
-      background: #f8fafc;
-      border-radius: 8px;
-      border-left: 3px solid var(--gold);
-      font-size: 0.82rem;
-    }
-
-    .dash-activity-item strong { display: block; color: var(--navy); font-size: 0.85rem; }
-    .dash-activity-item span { color: var(--text-muted); font-size: 0.75rem; }
-
-    .dash-status {
-      font-size: 0.72rem;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-
-    .btn-dash {
-      width: 100%;
-      padding: 0.8rem;
-      font-size: 0.9rem;
-    }
-
-    .btn-logout {
-      width: 100%;
-      margin-top: 0.75rem;
-      padding: 0.65rem;
-      border: 1.5px solid #e2e8f0;
-      background: white;
-      border-radius: 9px;
-      font-family: var(--font-ui);
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #dc2626;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      transition: all 0.2s;
-    }
-
-    .btn-logout:hover { background: #fee2e2; border-color: #fca5a5; }
-
-    /* TOAST */
-    .toast {
+    /* Toast */
+    .portal-toast {
       position: fixed;
       bottom: 28px;
       left: 50%;
       transform: translateX(-50%) translateY(80px);
-      background: var(--navy);
-      color: white;
-      padding: 0.85rem 1.5rem;
+      background: rgba(5, 14, 28, 0.95);
+      backdrop-filter: blur(20px);
+      color: var(--white);
+      padding: 0.85rem 1.6rem;
       border-radius: 40px;
       font-family: var(--font-ui);
-      font-size: 0.875rem;
+      font-size: 0.88rem;
+      font-weight: 600;
       display: flex;
       align-items: center;
       gap: 0.65rem;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.45);
-      border: 1px solid rgba(212, 175, 55, 0.35);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(212, 175, 55, 0.25);
+      border: 1px solid var(--gold-border);
       z-index: 99999;
       opacity: 0;
       transition: all 0.35s var(--ease-smooth);
       max-width: 90vw;
     }
 
-    .toast.visible {
+    .portal-toast.visible {
       opacity: 1;
       transform: translateX(-50%) translateY(0);
     }
 
-    .toast.success { border-color: var(--success); }
-    .toast.error { border-color: var(--danger); }
+    .portal-toast.success { border-color: var(--success); }
+    .portal-toast.error { border-color: var(--danger); }
 
-    /* RESPONSIVE */
-    @media (max-width: 900px) {
-      .auth-layout {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr;
-      }
-
-      .brand-panel {
-        min-height: 280px;
-      }
-
-      .brand-panel-content {
-        padding: 1.75rem 1.5rem;
-      }
-
-      .brand-headline { font-size: 1.6rem; }
-      .brand-testimonial { display: none; }
-
-      .auth-panel-inner {
-        padding: 2rem 1.5rem;
-      }
+    /* Footer Credits */
+    .card-footer-info {
+      text-align: center;
+      margin-top: 1.35rem;
+      font-size: 0.74rem;
+      color: var(--text-muted);
     }
 
-    @media (max-width: 480px) {
-      .form-row { grid-template-columns: 1fr; }
-      .auth-tabs { gap: 0.15rem; }
-      .auth-tab { font-size: 0.73rem; padding: 0.5rem 0.3rem; }
-    }
-
-    /* =======================================================
-       Full-Screen Logo / Title Intro Video Animation Overlay
-       ======================================================= */
-    .intro-splash-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: #000000;
-      z-index: 999999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      opacity: 1;
-      visibility: visible;
-      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .intro-splash-overlay.is-hidden {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
-
-    .intro-splash-container {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #000000;
-    }
-
-    .intro-logo-video {
-      width: 100%;
-      height: 100%;
-      max-width: 100vw;
-      max-height: 100vh;
-      object-fit: contain;
-      background-color: transparent;
-      outline: none;
-      border: none;
-      user-select: none;
-      -webkit-user-select: none;
-      pointer-events: none;
-    }
-
-    /* Subtle luxury skip button */
-    .skip-intro-btn {
-      position: absolute;
-      bottom: 28px;
-      right: 28px;
-      padding: 0.45rem 1rem;
-      background: rgba(15, 23, 42, 0.65);
-      color: rgba(255, 255, 255, 0.85);
-      border: 1px solid rgba(212, 175, 55, 0.3);
-      border-radius: 30px;
-      font-family: var(--font-body, -apple-system, sans-serif);
-      font-size: 0.8rem;
+    .card-footer-info a {
+      color: var(--gold-light);
+      text-decoration: none;
       font-weight: 600;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-      transition: all 0.25s ease;
-      z-index: 10;
-      opacity: 0.8;
     }
 
-    .skip-intro-btn:hover {
-      opacity: 1;
-      background: rgba(212, 175, 55, 0.2);
-      border-color: #d4af37;
-      color: #ffffff;
-      transform: translateY(-1px);
-    }
-
-    @media (max-width: 768px) {
-      .skip-intro-btn {
-        bottom: 20px;
-        right: 20px;
-        font-size: 0.75rem;
-        padding: 0.4rem 0.85rem;
+    @media (max-width: 600px) {
+      .card-content-body {
+        padding: 1.5rem 1.25rem;
+      }
+      .card-video-hero {
+        height: 160px;
+      }
+      .portal-hud-bar {
+        padding: 1rem 1.25rem;
+      }
+      .hud-sub {
+        display: none;
+      }
+      .form-group-row {
+        grid-template-columns: 1fr;
+        gap: 0.95rem;
       }
     }
   </style>
 </head>
 <body>
 
-  <!-- Full-Screen Logo/Title Intro Video Animation Overlay -->
-  <div id="introSplashOverlay" class="intro-splash-overlay">
-    <div class="intro-splash-container">
-      <video
-        id="introLogoVideo"
-        class="intro-logo-video"
-        src="logo.mp4"
-        autoplay
-        muted
-        playsinline
-        preload="auto"
-        controlslist="nodownload nofullscreen noremoteplayback"
-        disablepictureinpicture
-        oncontextmenu="return false;"
-      ></video>
-      <button id="skipIntroBtn" class="skip-intro-btn" onclick="dismissIntroSplash()" title="Skip Intro">
-        <span>Skip</span>
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="13 17 18 12 13 7"></polyline>
-          <polyline points="6 17 11 12 6 7"></polyline>
-        </svg>
-      </button>
-    </div>
-  </div>
+  <!-- Background Texture & Stardust Particles -->
+  <div class="ambient-bg-layer"></div>
+  <div class="wall-panels-backdrop"></div>
+  <canvas id="stardustCanvas"></canvas>
 
-  <div class="auth-layout">
-
-    <!-- ============================================================
-         LEFT PANEL — BRAND STORY
-    ============================================================ -->
-    <div class="brand-panel">
-      <div class="brand-panel-bg"></div>
-      <video class="brand-panel-video" src="logo.mp4" autoplay muted loop playsinline preload="auto"></video>
-      <div class="brand-panel-overlay"></div>
-      <div class="brand-panel-content">
-
-        <div class="brand-logo-mark">
-          <div class="logo-emblem">
-            <i data-lucide="shield-check" style="width:24px;height:24px;color:#0a192f;"></i>
-          </div>
-          <div class="logo-text-block">
-            <span class="brand-name">SRI YESASWI TRADERS</span>
-            <span class="brand-tag">Enterprise Trade Portal</span>
-          </div>
-        </div>
-
-        <h1 class="brand-headline">
-          India's <em>Finest</em><br/>
-          Agro Commodity<br/>
-          Export House
-        </h1>
-
-        <p class="brand-desc">
-          A trusted farm-source partner for bulk importers, food processors, and global commodity traders across 18+ countries. Direct sourcing. Guaranteed quality locks. Zero middlemen.
-        </p>
-
-        <div class="commodity-tags">
-          <span class="commodity-tag">🌾 Rajma Seeds</span>
-          <span class="commodity-tag">🌿 Finger Turmeric</span>
-          <span class="commodity-tag">☕ Green Coffee</span>
-          <span class="commodity-tag">🌶️ Black Pepper</span>
-          <span class="commodity-tag">🫚 Dried Ginger</span>
-        </div>
-
-        <div class="trust-row">
-          <div class="trust-badge">
-            <div class="trust-icon"><i data-lucide="award" style="width:14px;height:14px;"></i></div>
-            <div><strong>APEDA</strong><br/>Registered</div>
-          </div>
-          <div class="trust-badge">
-            <div class="trust-icon"><i data-lucide="leaf" style="width:14px;height:14px;"></i></div>
-            <div><strong>FSSAI</strong><br/>Certified</div>
-          </div>
-          <div class="trust-badge">
-            <div class="trust-icon"><i data-lucide="ship" style="width:14px;height:14px;"></i></div>
-            <div><strong>FOB/CIF</strong><br/>Export Ready</div>
-          </div>
-          <div class="trust-badge">
-            <div class="trust-icon"><i data-lucide="package-check" style="width:14px;height:14px;"></i></div>
-            <div><strong>Sortex</strong><br/>Cleaned Grade</div>
-          </div>
-        </div>
-
-        <div class="brand-testimonial">
-          <p class="testimonial-text">"Sri Yesaswi Traders delivered 48 MT of Rajma seeds to our Rotterdam depot — consistent quality, precision packing, and the best FOB pricing we've seen from any Indian house."</p>
-          <div class="testimonial-attr">
-            <div class="testi-avatar">A</div>
-            <div>
-              <div class="testi-name">Arjun Mehta</div>
-              <div class="testi-role">Chief Procurement Officer, Global Agro Importers BV</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="founder-strip">
-          <div class="founder-avatar-fallback">S</div>
-          <div class="founder-info">
-            <div class="founder-name">M.V SURESH KUMAR</div>
-            <div class="founder-title">Founder & Managing Director · Narsipatnam, Andhra Pradesh</div>
-          </div>
-        </div>
-
+  <!-- Top HUD Bar -->
+  <header class="portal-hud-bar">
+    <div class="hud-crest-badge" onclick="replayIntroTheater()" title="Sri Yesaswi Traders">
+      <div class="mini-sy-logo">SY</div>
+      <div class="hud-title-wrap">
+        <span class="hud-title">Sri Yesaswi Traders</span>
+        <span class="hud-sub">Enterprise Commodity Portal</span>
       </div>
     </div>
 
-    <!-- ============================================================
-         RIGHT PANEL — AUTHENTICATION FORMS
-    ============================================================ -->
-    <div class="auth-panel">
-      <div class="auth-panel-inner">
+    <div class="hud-controls-group">
+      <button class="hud-control-btn" id="audioBtn" onclick="toggleAudio()" title="Toggle Video Sound">
+        <i data-lucide="volume-x" id="audioIcon" style="width:15px;height:15px;"></i>
+        <span id="audioLabel">Sound</span>
+      </button>
 
-        <!-- Role & Mode Tabs -->
-        <div style="margin-bottom:1.5rem;">
-          <p class="auth-step-label">Trade Access Portal</p>
-          <h2 class="auth-panel-title" id="authTitle">Welcome Back</h2>
-          <p class="auth-panel-sub" id="authSubtitle">Sign in to access price locks, consignment tracking, and sourcing tools.</p>
+      <button class="hud-control-btn" onclick="replayIntroTheater()" title="Replay Full-Screen Logo Animation">
+        <i data-lucide="play" style="width:15px;height:15px;color:var(--gold);"></i>
+        <span>Replay Intro</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       CINEMATIC FULL-SCREEN INTRO THEATER (Plays on first visit / on replay)
+       ======================================================================== -->
+  <div id="introTheater" class="cinematic-intro-theater">
+    <video
+      id="theaterVideo"
+      class="intro-video-element"
+      autoplay
+      muted
+      playsinline
+      preload="auto"
+      controlslist="nodownload nofullscreen noremoteplayback"
+      disablepictureinpicture
+      oncontextmenu="return false;"
+    >
+      <source src="logo_h264.mp4" type="video/mp4" />
+      <source src="logo.mp4" type="video/mp4" />
+    </video>
+
+    <button class="theater-skip-btn" onclick="closeIntroTheater()">
+      <span>Enter Portal</span>
+      <i data-lucide="arrow-right" style="width:16px;height:16px;"></i>
+    </button>
+  </div>
+
+  <!-- ========================================================================
+       MAIN LOGIN CARD WITH ACTIVE EMBEDDED LOGO VIDEO ANIMATION (logo.mp4)
+       ======================================================================== -->
+  <main class="portal-workspace-stage">
+    <div class="portal-master-card">
+
+      <!-- Integrated logo.mp4 Video Animation Banner -->
+      <div class="card-video-hero" onclick="replayIntroTheater()" title="Click to watch full-screen cinematic logo animation">
+        <video
+          id="cardLogoVideo"
+          class="card-video-element"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="auto"
+          controlslist="nodownload nofullscreen noremoteplayback"
+          disablepictureinpicture
+          oncontextmenu="return false;"
+        >
+          <source src="logo_h264.mp4" type="video/mp4" />
+          <source src="logo.mp4" type="video/mp4" />
+        </video>
+        <div class="card-video-overlay"></div>
+        <div class="card-video-replay-badge">
+          <i data-lucide="sparkles" style="width:12px;height:12px;color:var(--gold);"></i>
+          <span>SY Logo Animation</span>
         </div>
+      </div>
 
-        <!-- Mode Tabs -->
-        <div class="auth-tabs" id="authTabs">
-          <button class="auth-tab active" id="tabLogin" onclick="setMode('login')">
+      <!-- Card Content Body -->
+      <div class="card-content-body">
+
+        <!-- Mode Switcher Tabs -->
+        <div class="auth-mode-tabs" id="authTabs">
+          <button class="auth-tab-btn active" id="tabLogin" onclick="switchTab('login')">
             <i data-lucide="log-in" style="width:14px;height:14px;"></i> Sign In
           </button>
-          <button class="auth-tab" id="tabRegister" onclick="setMode('register')">
+          <button class="auth-tab-btn" id="tabRegister" onclick="switchTab('register')">
             <i data-lucide="building-2" style="width:14px;height:14px;"></i> Register
           </button>
-          <button class="auth-tab admin-tab" id="tabAdmin" onclick="setMode('admin')">
-            <i data-lucide="shield-alert" style="width:14px;height:14px;"></i> Admin
+          <button class="auth-tab-btn" id="tabOtp" onclick="switchTab('otp')">
+            <i data-lucide="smartphone" style="width:14px;height:14px;"></i> Quick OTP
+          </button>
+          <button class="auth-tab-btn admin-tab" id="tabAdmin" onclick="switchTab('admin')">
+            <i data-lucide="shield-check" style="width:14px;height:14px;"></i> Admin
           </button>
         </div>
 
-        <!-- =====================
-             FORM SECTIONS
-        ===================== -->
-        <div id="allForms">
+        <!-- Forms Container -->
+        <div id="formsWrap">
 
-          <!-- GOOGLE SSO (shown on login & register) -->
-          <div id="googleSection">
-            <button class="btn-google" onclick="handleGoogleSignIn()">
-              <svg class="google-icon" viewBox="0 0 24 24" width="20" height="20">
+          <!-- Google SSO -->
+          <div id="googleSsoRow">
+            <button class="btn-google-sso" onclick="handleGoogleSignIn()">
+              <svg viewBox="0 0 24 24" width="18" height="18">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
               </svg>
-              <span>Continue with Google</span>
+              <span>Continue with Google SSO</span>
             </button>
-            <div class="auth-divider">or continue with email</div>
+            <div class="divider-gold-line">or access with credentials</div>
           </div>
 
-          <!-- ======  LOGIN FORM ====== -->
-          <form id="loginForm" onsubmit="handleLogin(event)" style="display:block;">
-            <div class="form-group">
-              <label class="form-label">Work Email / Buyer ID</label>
-              <div class="form-field-wrap">
-                <div class="field-icon"><i data-lucide="mail" style="width:16px;height:16px;"></i></div>
-                <input type="email" id="loginEmail" class="field-input" placeholder="name@company.com" required />
+          <!-- 1. SIGN IN FORM -->
+          <form id="formSignIn" onsubmit="submitLogin(event)" style="display:block;">
+            <div class="form-group-item">
+              <label class="field-label">Work Email / Buyer ID</label>
+              <div class="field-input-box">
+                <div class="field-input-icon"><i data-lucide="mail" style="width:15px;height:15px;"></i></div>
+                <input type="email" id="loginEmail" class="field-text-input" placeholder="buyer@globalagro.com" required />
               </div>
             </div>
-            <div class="form-group">
-              <label class="form-label">Password</label>
-              <div class="form-field-wrap">
-                <div class="field-icon"><i data-lucide="lock" style="width:16px;height:16px;"></i></div>
-                <input type="password" id="loginPw" class="field-input" placeholder="••••••••••" required />
-                <button type="button" class="pw-toggle" onclick="togglePw('loginPw', this)">
+
+            <div class="form-group-item">
+              <label class="field-label">Password</label>
+              <div class="field-input-box">
+                <div class="field-input-icon"><i data-lucide="lock" style="width:15px;height:15px;"></i></div>
+                <input type="password" id="loginPassword" class="field-text-input" placeholder="••••••••••••" required />
+                <button type="button" class="password-eye-btn" onclick="togglePassword('loginPassword', this)">
                   <i data-lucide="eye" style="width:16px;height:16px;"></i>
                 </button>
               </div>
             </div>
-            <div class="form-options-row">
-              <label class="checkbox-wrap"><input type="checkbox" checked /> Keep me signed in</label>
-              <a href="javascript:void(0)" class="link-forgot" onclick="showToast('Password reset link sent to your registered email.','success')">Forgot password?</a>
+
+            <div class="auth-options-line">
+              <label class="auth-checkbox">
+                <input type="checkbox" id="loginRemember" checked />
+                <span>Keep me signed in</span>
+              </label>
+              <a href="javascript:void(0)" class="gold-link" onclick="triggerToast('Password reset link sent to your registered email.', 'success')">Forgot password?</a>
             </div>
-            <button type="submit" class="btn-primary" id="loginBtn">
+
+            <button type="submit" class="btn-submit-gold" id="loginBtn">
               <span>Sign In to Trade Portal</span>
               <i data-lucide="arrow-right" style="width:17px;height:17px;"></i>
             </button>
-            <div class="auth-form-footer">
-              No account? <a href="javascript:void(0)" onclick="setMode('register')">Register your enterprise →</a>
-            </div>
 
-            <!-- Demo hint -->
-            <div style="margin-top:1rem; padding:0.75rem 1rem; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:9px; font-size:0.775rem; color:#64748b; display:flex; justify-content:space-between; align-items:center;">
+            <!-- 1-Click Demo Buyer Chip -->
+            <div class="demo-autofill-strip">
               <div>Demo: <strong>buyer@globalagro.com</strong> / buyer123</div>
-              <button type="button" style="background:white;border:1px solid #cbd5e1;padding:0.3rem 0.65rem;border-radius:6px;font-size:0.72rem;font-weight:700;color:#0f4c81;cursor:pointer;" onclick="autofillDemo('buyer')">Autofill</button>
+              <button type="button" class="demo-fill-btn" onclick="autofillDemo('buyer')">Autofill</button>
             </div>
           </form>
 
-          <!-- ======  REGISTER FORM ====== -->
-          <form id="registerForm" onsubmit="handleRegister(event)" style="display:none;">
-            <div class="form-group">
-              <label class="form-label">Enterprise / Company Name</label>
-              <div class="form-field-wrap">
-                <div class="field-icon"><i data-lucide="building-2" style="width:16px;height:16px;"></i></div>
-                <input type="text" id="regCompany" class="field-input" placeholder="e.g. Apex Global Trading LLC" required />
+          <!-- 2. REGISTER FORM -->
+          <form id="formRegister" onsubmit="submitRegister(event)" style="display:none;">
+            <div class="form-group-item">
+              <label class="field-label">Enterprise / Company Name</label>
+              <div class="field-input-box">
+                <div class="field-input-icon"><i data-lucide="building-2" style="width:15px;height:15px;"></i></div>
+                <input type="text" id="regCompany" class="field-text-input" placeholder="Apex Commodities International" required />
               </div>
             </div>
 
-            <div class="form-row">
-              <div class="form-group" style="margin-bottom:0;">
-                <label class="form-label">Your Name</label>
-                <div class="form-field-wrap">
-                  <div class="field-icon"><i data-lucide="user" style="width:16px;height:16px;"></i></div>
-                  <input type="text" id="regName" class="field-input" placeholder="Full Name" required />
+            <div class="form-group-row">
+              <div class="form-group-item" style="margin-bottom:0;">
+                <label class="field-label">Officer Name</label>
+                <div class="field-input-box">
+                  <div class="field-input-icon"><i data-lucide="user" style="width:15px;height:15px;"></i></div>
+                  <input type="text" id="regName" class="field-text-input" placeholder="Arjun Mehta" required />
                 </div>
               </div>
-              <div class="form-group" style="margin-bottom:0;">
-                <label class="form-label">Business Type</label>
-                <select id="regBizType" class="field-input no-icon" style="padding-left:0.9rem;" required>
-                  <option value="">Select...</option>
-                  <option>Importer / Exporter</option>
-                  <option>Food Processor</option>
+              <div class="form-group-item" style="margin-bottom:0;">
+                <label class="field-label">Business Type</label>
+                <select id="regBizType" class="field-text-input no-icon-padding" required>
+                  <option value="">Select Structure</option>
+                  <option>Bulk Importer / Exporter</option>
+                  <option>Food Processor / Spice Miller</option>
                   <option>Wholesaler / Distributor</option>
-                  <option>Supermarket / Retail Chain</option>
-                  <option>Manufacturing Industry</option>
+                  <option>Supermarket Chain</option>
                 </select>
               </div>
             </div>
 
-            <div class="form-row" style="margin-top:0.85rem;">
-              <div class="form-group" style="margin-bottom:0;">
-                <label class="form-label">Work Email</label>
-                <div class="form-field-wrap">
-                  <div class="field-icon"><i data-lucide="mail" style="width:16px;height:16px;"></i></div>
-                  <input type="email" id="regEmail" class="field-input" placeholder="you@company.com" required />
+            <div class="form-group-row" style="margin-top:0.75rem;">
+              <div class="form-group-item" style="margin-bottom:0;">
+                <label class="field-label">Work Email</label>
+                <div class="field-input-box">
+                  <div class="field-input-icon"><i data-lucide="mail" style="width:15px;height:15px;"></i></div>
+                  <input type="email" id="regEmail" class="field-text-input" placeholder="arjun@apex.com" required />
                 </div>
               </div>
-              <div class="form-group" style="margin-bottom:0;">
-                <label class="form-label">WhatsApp / Phone</label>
-                <div class="form-field-wrap">
-                  <div class="field-icon"><i data-lucide="phone" style="width:16px;height:16px;"></i></div>
-                  <input type="tel" id="regPhone" class="field-input" placeholder="+91..." required />
+              <div class="form-group-item" style="margin-bottom:0;">
+                <label class="field-label">WhatsApp / Phone</label>
+                <div class="field-input-box">
+                  <div class="field-input-icon"><i data-lucide="phone" style="width:15px;height:15px;"></i></div>
+                  <input type="tel" id="regPhone" class="field-text-input" placeholder="+91..." required />
                 </div>
               </div>
             </div>
 
-            <div class="form-row" style="margin-top:0.85rem;">
-              <div class="form-group" style="margin-bottom:0;">
-                <label class="form-label">Primary Commodity</label>
-                <select id="regCommodity" class="field-input no-icon" style="padding-left:0.9rem;" required>
-                  <option value="">Select...</option>
+            <div class="form-group-row" style="margin-top:0.75rem;">
+              <div class="form-group-item" style="margin-bottom:0;">
+                <label class="field-label">Primary Commodity</label>
+                <select id="regCommodity" class="field-text-input no-icon-padding" required>
+                  <option value="">Select Commodity</option>
                   <option>Rajma Seeds (Kidney Beans)</option>
                   <option>Finger Turmeric</option>
                   <option>Raw Green Coffee Seeds</option>
                   <option>Premium Black Pepper</option>
                   <option>Dried Ginger</option>
-                  <option>Multiple Commodities</option>
                 </select>
               </div>
-              <div class="form-group" style="margin-bottom:0;">
-                <label class="form-label">Destination Port</label>
-                <div class="form-field-wrap">
-                  <div class="field-icon"><i data-lucide="ship" style="width:16px;height:16px;"></i></div>
-                  <input type="text" id="regPort" class="field-input" placeholder="e.g. Dubai, Rotterdam" />
+              <div class="form-group-item" style="margin-bottom:0;">
+                <label class="field-label">Destination Port</label>
+                <div class="field-input-box">
+                  <div class="field-input-icon"><i data-lucide="anchor" style="width:15px;height:15px;"></i></div>
+                  <input type="text" id="regPort" class="field-text-input" placeholder="Rotterdam, Jebel Ali" />
                 </div>
               </div>
             </div>
 
-            <div class="form-group" style="margin-top:0.85rem;">
-              <label class="form-label">Create Password</label>
-              <div class="form-field-wrap">
-                <div class="field-icon"><i data-lucide="lock" style="width:16px;height:16px;"></i></div>
-                <input type="password" id="regPw" class="field-input" placeholder="Minimum 8 characters" required />
-                <button type="button" class="pw-toggle" onclick="togglePw('regPw', this)">
+            <div class="form-group-item" style="margin-top:0.75rem;">
+              <label class="field-label">Create Password</label>
+              <div class="field-input-box">
+                <div class="field-input-icon"><i data-lucide="lock" style="width:15px;height:15px;"></i></div>
+                <input type="password" id="regPassword" class="field-text-input" placeholder="Minimum 8 characters" required />
+                <button type="button" class="password-eye-btn" onclick="togglePassword('regPassword', this)">
                   <i data-lucide="eye" style="width:16px;height:16px;"></i>
                 </button>
               </div>
             </div>
 
-            <button type="submit" class="btn-primary" id="registerBtn" style="margin-top:0.25rem;">
+            <button type="submit" class="btn-submit-gold" id="regBtn" style="margin-top:0.35rem;">
               <span>Create Enterprise Account</span>
               <i data-lucide="check-circle-2" style="width:17px;height:17px;"></i>
             </button>
-            <div class="auth-form-footer">
-              Already have an account? <a href="javascript:void(0)" onclick="setMode('login')">Sign In →</a>
+          </form>
+
+          <!-- 3. QUICK OTP FORM -->
+          <form id="formOtp" onsubmit="submitOtp(event)" style="display:none;">
+            <div class="form-group-item">
+              <label class="field-label">Mobile or WhatsApp Number</label>
+              <div class="field-input-box">
+                <div class="field-input-icon"><i data-lucide="phone-call" style="width:15px;height:15px;"></i></div>
+                <input type="tel" id="otpPhone" class="field-text-input" placeholder="+91 98480 12345" />
+              </div>
+              <button type="button" class="btn-google-sso" style="margin-top:0.65rem;" onclick="sendOtpCode()">
+                <i data-lucide="send" style="width:15px;height:15px;color:var(--gold);"></i>
+                <span>Send 6-Digit Secure PIN</span>
+              </button>
+            </div>
+
+            <div id="otpBoxArea" style="display:none; margin-top:1rem;">
+              <label class="field-label">Enter 6-Digit PIN (Demo: 778899)</label>
+              <div class="otp-inputs-grid">
+                <input type="text" maxlength="1" class="otp-box" onkeyup="moveOtp(this)" />
+                <input type="text" maxlength="1" class="otp-box" onkeyup="moveOtp(this)" />
+                <input type="text" maxlength="1" class="otp-box" onkeyup="moveOtp(this)" />
+                <input type="text" maxlength="1" class="otp-box" onkeyup="moveOtp(this)" />
+                <input type="text" maxlength="1" class="otp-box" onkeyup="moveOtp(this)" />
+                <input type="text" maxlength="1" class="otp-box" onkeyup="moveOtp(this)" />
+              </div>
+              <button type="submit" class="btn-submit-gold" id="otpBtn">
+                <span>Verify & Enter Portal</span>
+                <i data-lucide="shield-check" style="width:17px;height:17px;"></i>
+              </button>
             </div>
           </form>
 
-          <!-- ======  ADMIN FORM ====== -->
-          <form id="adminForm" onsubmit="handleAdmin(event)" style="display:none;">
-            <div class="admin-badge-bar">
-              <i data-lucide="shield-alert" style="width:13px;height:13px;"></i>
-              RESTRICTED — TRADE DESK & MANAGEMENT OFFICERS ONLY
+          <!-- 4. ADMIN CLEARANCE FORM -->
+          <form id="formAdmin" onsubmit="submitAdmin(event)" style="display:none;">
+            <div class="admin-badge-strip">
+              <i data-lucide="shield-alert" style="width:15px;height:15px;color:#ef4444;flex-shrink:0;"></i>
+              <span>RESTRICTED DESK — M.V SURESH KUMAR & EXECUTIVE DESK</span>
             </div>
-            <div class="form-group">
-              <label class="form-label">Desk Officer Email</label>
-              <div class="form-field-wrap">
-                <div class="field-icon"><i data-lucide="mail" style="width:16px;height:16px;"></i></div>
-                <input type="email" id="adminEmail" class="field-input gold-focus" placeholder="admin@sriyesaswitraders.com" required />
+
+            <div class="form-group-item">
+              <label class="field-label">Desk Officer Email</label>
+              <div class="field-input-box">
+                <div class="field-input-icon"><i data-lucide="mail" style="width:15px;height:15px;"></i></div>
+                <input type="email" id="adminEmail" class="field-text-input" placeholder="admin@sriyesaswitraders.com" required />
               </div>
             </div>
-            <div class="form-group">
-              <label class="form-label">Master Password</label>
-              <div class="form-field-wrap">
-                <div class="field-icon"><i data-lucide="lock" style="width:16px;height:16px;"></i></div>
-                <input type="password" id="adminPw" class="field-input gold-focus" placeholder="••••••••••" required />
-                <button type="button" class="pw-toggle" onclick="togglePw('adminPw', this)">
+
+            <div class="form-group-item">
+              <label class="field-label">Master Password</label>
+              <div class="field-input-box">
+                <div class="field-input-icon"><i data-lucide="lock" style="width:15px;height:15px;"></i></div>
+                <input type="password" id="adminPassword" class="field-text-input" placeholder="••••••••••••" required />
+                <button type="button" class="password-eye-btn" onclick="togglePassword('adminPassword', this)">
                   <i data-lucide="eye" style="width:16px;height:16px;"></i>
                 </button>
               </div>
             </div>
-            <div class="form-group">
-              <label class="form-label">Security PIN / 2FA Token</label>
-              <div class="form-field-wrap">
-                <div class="field-icon"><i data-lucide="key" style="width:16px;height:16px;"></i></div>
-                <input type="text" id="adminPin" class="field-input gold-focus" placeholder="6-digit PIN" maxlength="6" required />
+
+            <div class="form-group-item">
+              <label class="field-label">Security PIN / 2FA Token</label>
+              <div class="field-input-box">
+                <div class="field-input-icon"><i data-lucide="key" style="width:15px;height:15px;"></i></div>
+                <input type="password" id="adminPin" class="field-text-input" placeholder="6-digit PIN" maxlength="6" required />
               </div>
             </div>
-            <button type="submit" class="btn-primary btn-admin" id="adminBtn">
+
+            <button type="submit" class="btn-submit-gold btn-admin-crimson" id="adminBtn">
               <i data-lucide="shield" style="width:17px;height:17px;"></i>
               <span>Authorize & Enter Admin Desk</span>
             </button>
 
-            <div style="margin-top:1rem; padding:0.75rem 1rem; background:#fef2f2; border:1px dashed #fca5a5; border-radius:9px; font-size:0.775rem; color:#7f1d1d; display:flex; justify-content:space-between; align-items:center;">
-              <div>Demo: <strong>admin@sriyesaswitraders.com</strong> / PIN: 531116</div>
-              <button type="button" style="background:white;border:1px solid #fca5a5;padding:0.3rem 0.65rem;border-radius:6px;font-size:0.72rem;font-weight:700;color:#991b1b;cursor:pointer;" onclick="autofillDemo('admin')">Autofill</button>
+            <!-- 1-Click Demo Admin Chip -->
+            <div class="demo-autofill-strip" style="border-color:rgba(239,68,68,0.35); background:rgba(69,10,10,0.4);">
+              <div>Master Demo: <strong>admin@sriyesaswitraders.com</strong> (PIN: 531116)</div>
+              <button type="button" class="demo-fill-btn" style="background:rgba(239,68,68,0.25); border-color:#f87171; color:#fca5a5;" onclick="autofillDemo('admin')">Autofill</button>
             </div>
           </form>
 
         </div>
 
-        <!-- ======  DASHBOARD AFTER LOGIN ====== -->
-        <div id="dashScreen" class="dashboard-screen">
-          <div class="dash-greeting">
-            <div class="dash-avatar" id="dashAv">B</div>
+        <!-- Post Login Screen -->
+        <div id="postLoginView" class="post-login-view">
+          <div class="post-user-header">
+            <div class="post-avatar-circle" id="postAvatar">S</div>
             <div>
-              <div class="dash-name" id="dashName">Enterprise Buyer</div>
-              <div class="dash-role" id="dashRole">Verified Trade Account</div>
-            </div>
-            <div style="margin-left:auto;">
-              <span id="dbStatusDot" style="display:inline-flex;align-items:center;gap:0.3rem;padding:0.25rem 0.6rem;border-radius:20px;font-size:0.7rem;font-weight:700;background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.3);">
-                <span style="width:6px;height:6px;background:#10b981;border-radius:50%;"></span>
-                <span>Firebase Live</span>
-              </span>
+              <div style="font-family:var(--font-serif-royal); font-size:1.15rem; font-weight:800; color:var(--gold-shimmer);" id="postName">Enterprise Buyer</div>
+              <div style="font-size:0.75rem; color:var(--text-soft);" id="postRole">Verified Trade Account</div>
             </div>
           </div>
 
-          <div class="dash-grid">
-            <div class="dash-stat">
-              <div class="dash-stat-val" id="dStat1">2 Active</div>
-              <div class="dash-stat-lbl" id="dStat1L">Consignments In Transit</div>
+          <div class="post-stats-grid">
+            <div class="post-stat-box">
+              <div class="post-stat-number">2 Active</div>
+              <div class="post-stat-label">Consignments In Transit</div>
             </div>
-            <div class="dash-stat">
-              <div class="dash-stat-val" id="dStat2">Rate Lock</div>
-              <div class="dash-stat-lbl" id="dStat2L">48hr Price Guarantee</div>
+            <div class="post-stat-box">
+              <div class="post-stat-number">Rate Lock</div>
+              <div class="post-stat-label">48h Price Guarantee</div>
             </div>
           </div>
 
-          <p style="font-size:0.78rem;font-weight:700;color:#374151;margin-bottom:0.5rem;letter-spacing:0.02em;">RECENT TRADE ACTIVITY</p>
-          <div class="dash-activity" id="dashActivity"></div>
-
-          <a href="1business.html" class="btn-primary btn-dash" style="text-decoration:none;justify-content:center;">
+          <a href="1business.html" class="btn-submit-gold" style="text-decoration:none; margin-bottom:0.75rem;">
             <i data-lucide="layout-dashboard" style="width:16px;height:16px;"></i>
-            <span>Enter Trade Portal</span>
+            <span>Enter Main Trade Desk</span>
           </a>
-          <button class="btn-logout" onclick="handleLogout()">
-            <i data-lucide="log-out" style="width:15px;height:15px;"></i>
-            Sign Out
+
+          <button type="button" class="btn-google-sso" onclick="logout()">
+            <i data-lucide="log-out" style="width:15px;height:15px;color:#ef4444;"></i>
+            <span>Sign Out</span>
           </button>
+        </div>
+
+        <!-- Footer Info -->
+        <div class="card-footer-info">
+          <span>Direct Farm Agro Export House · </span>
+          <a href="mailto:info@sriyesaswitraders.com">info@sriyesaswitraders.com</a>
         </div>
 
       </div>
     </div>
+  </main>
 
-  </div><!-- end auth-layout -->
-
-  <!-- TOAST -->
-  <div class="toast" id="toast">
-    <i data-lucide="info" style="width:16px;height:16px;color:var(--gold);flex-shrink:0;"></i>
-    <span id="toastMsg">Message</span>
+  <!-- Luxury Toast Notification -->
+  <div class="portal-toast" id="toastElem">
+    <i data-lucide="sparkles" id="toastIcon" style="width:18px;height:18px;color:var(--gold);flex-shrink:0;"></i>
+    <span id="toastText">Welcome to Sri Yesaswi Traders</span>
   </div>
 
+  <!-- Scripts -->
   <script>
-    // ================================================
-    // STATE
-    // ================================================
-    let currentMode = 'login';
+    // --------------------------------------------------------------------------
+    // 1. REAL-TIME GOLDEN STARDUST CANVAS PARTICLES
+    // --------------------------------------------------------------------------
+    const canvas = document.getElementById('stardustCanvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    let mouse = { x: null, y: null, radius: 120 };
 
-    // ================================================
-    // MODE SWITCHER
-    // ================================================
-    function setMode(mode) {
-      currentMode = mode;
-      const tabs = { login: 'tabLogin', register: 'tabRegister', admin: 'tabAdmin' };
-      const forms = { login: 'loginForm', register: 'registerForm', admin: 'adminForm' };
-      const titles = {
-        login:    ['Welcome Back', 'Sign in to access price locks, consignment tracking, and sourcing tools.'],
-        register: ['Open Your Account', 'Register your enterprise to unlock bulk pricing, RFQ filing, and export partnerships.'],
-        admin:    ['Admin Clearance', 'Restricted entry for M.V SURESH KUMAR and authorized Trade Desk Officers.']
-      };
+    function fitCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', fitCanvas);
+    fitCanvas();
+
+    window.addEventListener('mousemove', (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    });
+    window.addEventListener('mouseleave', () => {
+      mouse.x = null;
+      mouse.y = null;
+    });
+
+    class Particle {
+      constructor() {
+        this.reset();
+      }
+      reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2.4 + 0.6;
+        this.speedX = (Math.random() - 0.5) * 0.5;
+        this.speedY = -(Math.random() * 0.6 + 0.2);
+        this.alpha = Math.random() * 0.75 + 0.25;
+        this.alphaDelta = (Math.random() * 0.015 + 0.005) * (Math.random() > 0.5 ? 1 : -1);
+        this.isStar = Math.random() > 0.7;
+        this.hue = Math.random() * 18 + 42; // Golden hue
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.alpha += this.alphaDelta;
+        if (this.alpha >= 1 || this.alpha <= 0.1) this.alphaDelta = -this.alphaDelta;
+
+        if (mouse.x !== null && mouse.y !== null) {
+          const dx = mouse.x - this.x;
+          const dy = mouse.y - this.y;
+          const d = Math.sqrt(dx * dx + dy * dy);
+          if (d < mouse.radius) {
+            const force = (mouse.radius - d) / mouse.radius;
+            this.x -= (dx / d) * force * 2;
+            this.y -= (dy / d) * force * 2;
+          }
+        }
+
+        if (this.y < -10 || this.x < -10 || this.x > canvas.width + 10) {
+          this.reset();
+          this.y = canvas.height + 5;
+        }
+      }
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, Math.min(1, this.alpha));
+        ctx.fillStyle = `hsl(${this.hue}, 90%, 65%)`;
+        ctx.shadowColor = `hsl(${this.hue}, 100%, 75%)`;
+        ctx.shadowBlur = this.size * 5;
+
+        if (this.isStar) {
+          const s = this.size * 2;
+          ctx.beginPath();
+          ctx.moveTo(this.x, this.y - s);
+          ctx.quadraticCurveTo(this.x, this.y, this.x + s, this.y);
+          ctx.quadraticCurveTo(this.x, this.y, this.x, this.y + s);
+          ctx.quadraticCurveTo(this.x, this.y, this.x - s, this.y);
+          ctx.quadraticCurveTo(this.x, this.y, this.x, this.y - s);
+          ctx.fill();
+        } else {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+    }
+
+    function initParticlePool() {
+      const count = Math.min(70, Math.floor((canvas.width * canvas.height) / 19000));
+      particles = [];
+      for (let i = 0; i < count; i++) particles.push(new Particle());
+    }
+    initParticlePool();
+
+    function renderParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let p of particles) {
+        p.update();
+        p.draw();
+      }
+      requestAnimationFrame(renderParticles);
+    }
+    renderParticles();
+
+    // --------------------------------------------------------------------------
+    // 2. VIDEO INTRO THEATER & CONTROLS (logo.mp4)
+    // --------------------------------------------------------------------------
+    const theater = document.getElementById('introTheater');
+    const theaterVid = document.getElementById('theaterVideo');
+    const cardVid = document.getElementById('cardLogoVideo');
+    let introDone = false;
+
+    function closeIntroTheater() {
+      if (introDone) return;
+      introDone = true;
+      theater.classList.add('theater-closed');
+
+      // Ensure card logo video continues playing smoothly
+      if (cardVid) {
+        cardVid.play().catch(e => console.warn('Card video play:', e));
+      }
+    }
+
+    function replayIntroTheater() {
+      introDone = false;
+      theater.classList.remove('theater-closed');
+
+      if (theaterVid) {
+        theaterVid.currentTime = 0;
+        theaterVid.play().catch(e => console.warn('Theater video replay:', e));
+      }
+      triggerToast('Playing Sri Yesaswi Traders logo animation...', 'info');
+
+      // Auto close after video completes (2.85s)
+      setTimeout(() => {
+        if (!introDone) closeIntroTheater();
+      }, 3000);
+    }
+
+    let isAudioOn = false;
+    function toggleAudio() {
+      isAudioOn = !isAudioOn;
+      if (theaterVid) theaterVid.muted = !isAudioOn;
+      if (cardVid) cardVid.muted = !isAudioOn;
+
+      const icon = document.getElementById('audioIcon');
+      const label = document.getElementById('audioLabel');
+      const btn = document.getElementById('audioBtn');
+
+      if (isAudioOn) {
+        btn.classList.add('active');
+        icon.setAttribute('data-lucide', 'volume-2');
+        label.textContent = 'Audio On';
+        triggerToast('Audio Unmuted', 'success');
+      } else {
+        btn.classList.remove('active');
+        icon.setAttribute('data-lucide', 'volume-x');
+        label.textContent = 'Sound';
+        triggerToast('Audio Muted', 'info');
+      }
+      lucide.createIcons();
+    }
+
+    // --------------------------------------------------------------------------
+    // 3. TABS & FORM INTERACTIONS
+    // --------------------------------------------------------------------------
+    function switchTab(mode) {
+      const tabs = { login: 'tabLogin', register: 'tabRegister', otp: 'tabOtp', admin: 'tabAdmin' };
+      const forms = { login: 'formSignIn', register: 'formRegister', otp: 'formOtp', admin: 'formAdmin' };
 
       Object.keys(tabs).forEach(m => {
         document.getElementById(tabs[m]).classList.toggle('active', m === mode);
-        document.getElementById(forms[m]).style.display = m === mode ? 'block' : 'none';
+        document.getElementById(forms[m]).style.display = (m === mode ? 'block' : 'none');
       });
 
-      // Google SSO block only on login/register
-      document.getElementById('googleSection').style.display = mode === 'admin' ? 'none' : 'block';
-
-      document.getElementById('authTitle').textContent = titles[mode][0];
-      document.getElementById('authSubtitle').textContent = titles[mode][1];
+      document.getElementById('googleSsoRow').style.display = (mode === 'admin' || mode === 'otp') ? 'none' : 'block';
       lucide.createIcons();
     }
 
-    // ================================================
-    // TOGGLE PASSWORD
-    // ================================================
-    function togglePw(inputId, btn) {
-      const input = document.getElementById(inputId);
-      const isText = input.type === 'text';
-      input.type = isText ? 'password' : 'text';
-      btn.innerHTML = `<i data-lucide="${isText ? 'eye' : 'eye-off'}" style="width:16px;height:16px;"></i>`;
+    function togglePassword(id, btn) {
+      const input = document.getElementById(id);
+      const isPw = input.type === 'password';
+      input.type = isPw ? 'text' : 'password';
+      btn.innerHTML = `<i data-lucide="${isPw ? 'eye-off' : 'eye'}" style="width:16px;height:16px;"></i>`;
       lucide.createIcons();
     }
 
-    // ================================================
-    // GOOGLE SIGN-IN
-    // ================================================
-    async function handleGoogleSignIn() {
-      showToast('Launching Google authentication...', 'info');
-
-      if (typeof firebase !== 'undefined' && typeof auth !== 'undefined' && auth !== null) {
-        try {
-          const provider = new firebase.auth.GoogleAuthProvider();
-          provider.setCustomParameters({ prompt: 'select_account' });
-          const result = await auth.signInWithPopup(provider);
-          const user = result.user;
-
-          // Save to Firestore if new user
-          if (typeof db !== 'undefined' && db !== null) {
-            await db.collection('users').doc(user.uid).set({
-              uid: user.uid,
-              name: user.displayName,
-              email: user.email,
-              photoURL: user.photoURL,
-              role: 'buyer',
-              loginMethod: 'google',
-              lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true });
-          }
-
-          showToast(`Welcome, ${user.displayName}!`, 'success');
-          renderDashboard({
-            name: user.displayName,
-            email: user.email,
-            photoURL: user.photoURL,
-            role: 'buyer'
-          });
-          return;
-        } catch (err) {
-          if (err.code === 'auth/popup-closed-by-user') return;
-          showToast('Google sign-in failed. Using demo mode.', 'error');
-        }
+    function sendOtpCode() {
+      const phone = document.getElementById('otpPhone').value.trim();
+      if (!phone) {
+        triggerToast('Please enter your phone/WhatsApp number.', 'error');
+        return;
       }
-
-      // Simulated Google demo fallback
-      setTimeout(() => {
-        showToast('Google sign-in verified!', 'success');
-        renderDashboard({
-          name: 'Arjun Mehta (Google)',
-          email: 'arjun@globalagro.com',
-          photoURL: null,
-          role: 'buyer',
-          company: 'Global Agro Importers BV'
-        });
-      }, 900);
+      triggerToast(`6-Digit PIN sent to ${phone}. (Demo PIN: 778899)`, 'success');
+      document.getElementById('otpBoxArea').style.display = 'block';
+      const first = document.querySelector('.otp-box');
+      if (first) first.focus();
     }
 
-    // ================================================
-    // LOGIN
-    // ================================================
-    async function handleLogin(e) {
+    function moveOtp(elem) {
+      if (elem.value.length === 1) {
+        const next = elem.nextElementSibling;
+        if (next && next.classList.contains('otp-box')) next.focus();
+      }
+    }
+
+    function submitOtp(e) {
+      e.preventDefault();
+      const code = Array.from(document.querySelectorAll('.otp-box')).map(i => i.value).join('');
+      if (code.length < 6) {
+        triggerToast('Please enter complete 6-digit PIN.', 'error');
+        return;
+      }
+      triggerToast('OTP verified! Entering Trade Desk...', 'success');
+      loginSuccess({
+        name: 'Verified Mobile Buyer',
+        email: 'mobile.buyer@sriyesaswitraders.com',
+        role: 'buyer',
+        company: 'Prime Global Import Partners'
+      });
+    }
+
+    // --------------------------------------------------------------------------
+    // 4. AUTH HANDLERS
+    // --------------------------------------------------------------------------
+    async function submitLogin(e) {
       e.preventDefault();
       const email = document.getElementById('loginEmail').value.trim();
-      const pw = document.getElementById('loginPw').value;
+      const pw = document.getElementById('loginPassword').value;
       const btn = document.getElementById('loginBtn');
 
       setLoading(btn, true);
-
       const res = typeof loginUser === 'function'
         ? await loginUser(email, pw, 'buyer')
-        : { success: true, user: { name: 'Enterprise Buyer', email, role: 'buyer' } };
+        : { success: true, user: { name: 'Enterprise Buyer', email, role: 'buyer', company: 'Global Agro Importers BV' } };
 
       setLoading(btn, false);
 
       if (!res.success) {
-        showToast(res.error || 'Invalid credentials. Please try again.', 'error');
+        triggerToast(res.error || 'Invalid credentials.', 'error');
         return;
       }
 
-      showToast('Sign-in verified! Loading your trade records...', 'success');
-      setTimeout(() => renderDashboard(res.user), 350);
+      triggerToast('Sign-in verified! Loading trade records...', 'success');
+      setTimeout(() => loginSuccess(res.user), 350);
     }
 
-    // ================================================
-    // REGISTER
-    // ================================================
-    async function handleRegister(e) {
+    async function submitRegister(e) {
       e.preventDefault();
-      const btn = document.getElementById('registerBtn');
+      const btn = document.getElementById('regBtn');
       const data = {
         company:   document.getElementById('regCompany').value.trim(),
         name:      document.getElementById('regName').value.trim(),
@@ -1495,12 +1545,11 @@
         phone:     document.getElementById('regPhone').value.trim(),
         commodity: document.getElementById('regCommodity').value,
         port:      document.getElementById('regPort').value.trim(),
-        password:  document.getElementById('regPw').value,
+        password:  document.getElementById('regPassword').value,
         role:      'buyer'
       };
 
       setLoading(btn, true);
-
       const res = typeof registerUser === 'function'
         ? await registerUser(data)
         : { success: true, user: { ...data } };
@@ -1508,242 +1557,199 @@
       setLoading(btn, false);
 
       if (!res.success) {
-        showToast(res.error || 'Registration failed. Please try again.', 'error');
+        triggerToast(res.error || 'Registration failed.', 'error');
         return;
       }
 
-      showToast('Enterprise account created & saved to database!', 'success');
-      setTimeout(() => renderDashboard({ name: data.name, email: data.email, company: data.company, role: 'buyer' }), 350);
+      triggerToast('Enterprise account registered & secured!', 'success');
+      setTimeout(() => loginSuccess({ name: data.name, email: data.email, company: data.company, role: 'buyer' }), 350);
     }
 
-    // ================================================
-    // ADMIN
-    // ================================================
-    async function handleAdmin(e) {
+    async function submitAdmin(e) {
       e.preventDefault();
       const btn = document.getElementById('adminBtn');
       const email = document.getElementById('adminEmail').value.trim();
-      const pw = document.getElementById('adminPw').value;
+      const pw = document.getElementById('adminPassword').value;
       const pin = document.getElementById('adminPin').value.trim();
 
       setLoading(btn, true);
-
       const res = typeof loginUser === 'function'
         ? await loginUser(email, pw, 'admin', pin)
-        : { success: pin === '531116', user: { name: 'M.V SURESH KUMAR', role: 'admin' }, error: 'Invalid PIN.' };
+        : { success: (pin === '531116'), user: { name: 'M.V SURESH KUMAR', role: 'admin', company: 'Sri Yesaswi Traders HQ' }, error: 'Invalid PIN clearance.' };
 
       setLoading(btn, false);
 
       if (!res.success) {
-        showToast(res.error || 'Admin authorization failed.', 'error');
+        triggerToast(res.error || 'Admin clearance rejected.', 'error');
         return;
       }
 
-      showToast('Admin clearance granted. Launching Commercial Desk...', 'success');
-      setTimeout(() => renderDashboard({ name: 'M.V SURESH KUMAR (MD)', email, role: 'admin', company: 'Sri Yesaswi Traders HQ' }), 350);
+      triggerToast('Admin Clearance Granted! Opening Commercial Desk...', 'success');
+      setTimeout(() => loginSuccess({ name: 'M.V SURESH KUMAR (MD)', email, role: 'admin', company: 'Sri Yesaswi Traders HQ' }), 350);
     }
 
-    // ================================================
-    // RENDER DASHBOARD
-    // ================================================
-    async function renderDashboard(user) {
-      // Save session to localStorage so 1business.html session guard passes
-      localStorage.setItem('syt_session', JSON.stringify({
-        name:     user.name || user.email || 'Buyer',
-        email:    user.email || '',
-        role:     user.role || 'buyer',
-        company:  user.company || '',
-        photoURL: user.photoURL || null,
-        loginAt:  Date.now()
-      }));
+    async function handleGoogleSignIn() {
+      triggerToast('Connecting to Google authentication...', 'info');
 
-      // Redirect to the main website after showing the success message briefly
-      setTimeout(() => {
-        window.location.href = '1business.html';
-      }, 1200);
+      if (typeof firebase !== 'undefined' && typeof auth !== 'undefined' && auth !== null) {
+        try {
+          const provider = new firebase.auth.GoogleAuthProvider();
+          provider.setCustomParameters({ prompt: 'select_account' });
+          const result = await auth.signInWithPopup(provider);
+          const user = result.user;
 
-      const isAdmin = user.role === 'admin';
-      const av = document.getElementById('dashAv');
-      av.className = `dash-avatar ${isAdmin ? 'admin-av' : ''}`;
-
-      if (user.photoURL) {
-        av.innerHTML = `<img src="${user.photoURL}" alt="${user.name}" />`;
-      } else {
-        av.textContent = user.name.charAt(0).toUpperCase();
+          triggerToast(`Welcome, ${user.displayName}!`, 'success');
+          loginSuccess({
+            name: user.displayName,
+            email: user.email,
+            photoURL: user.photoURL,
+            role: 'buyer',
+            company: 'Google Verified Trade Account'
+          });
+          return;
+        } catch (err) {
+          if (err.code === 'auth/popup-closed-by-user') return;
+          console.warn('Google SSO fallback:', err);
+        }
       }
 
-      document.getElementById('dashName').textContent = user.name || user.email;
-      document.getElementById('dashRole').textContent = isAdmin
-        ? 'Master Admin · Sri Yesaswi Traders HQ'
-        : `${user.company || 'Enterprise Buyer'} (${user.email})`;
+      setTimeout(() => {
+        triggerToast('Google SSO verified for Arjun Mehta!', 'success');
+        loginSuccess({
+          name: 'Arjun Mehta (Google)',
+          email: 'arjun@globalagro.com',
+          role: 'buyer',
+          company: 'Global Agro Importers BV'
+        });
+      }, 700);
+    }
 
-      document.getElementById('authTitle').textContent = isAdmin ? 'Admin Desk' : 'Trade Portal';
-      document.getElementById('authSubtitle').textContent = isAdmin
-        ? 'Live trade operations, RFQ management, and dispatch control.'
-        : 'Your real-time commodity trade records and price locks.';
+    // --------------------------------------------------------------------------
+    // 5. SESSION & REDIRECT
+    // --------------------------------------------------------------------------
+    function loginSuccess(user) {
+      localStorage.setItem('syt_session', JSON.stringify({
+        name: user.name || user.email || 'Enterprise Buyer',
+        email: user.email || '',
+        role: user.role || 'buyer',
+        company: user.company || 'Sri Yesaswi Traders Partner',
+        photoURL: user.photoURL || null,
+        loginAt: Date.now()
+      }));
 
-      if (isAdmin) {
-        document.getElementById('dStat1').textContent = '14 RFQs';
-        document.getElementById('dStat1L').textContent = 'Pending Trade Inquiries';
-        document.getElementById('dStat2').textContent = '180 MT';
-        document.getElementById('dStat2L').textContent = 'Volume Dispatched This Week';
-        document.getElementById('dashActivity').innerHTML = `
-          <div class="dash-activity-item" style="border-left-color:#b91c1c;">
-            <div><strong>RFQ: Raw Green Coffee (40 MT)</strong><span>Continental Roastings Ltd — Dubai CIF</span></div>
-            <span class="dash-status" style="color:#b91c1c;">Review</span>
-          </div>
-          <div class="dash-activity-item" style="border-left-color:var(--gold);">
-            <div><strong>Price Lock: Black Pepper 550g/l</strong><span>FOB Vizag Rate Locked — Active 48h</span></div>
-            <span class="dash-status" style="color:#10b981;">Active</span>
-          </div>`;
+      document.getElementById('formsWrap').style.display = 'none';
+      document.getElementById('authTabs').style.display = 'none';
+      document.getElementById('postLoginView').style.display = 'block';
+
+      document.getElementById('postName').textContent = user.name || user.email;
+      document.getElementById('postRole').textContent = (user.role === 'admin')
+        ? 'Executive Managing Director · Sri Yesaswi Traders'
+        : `${user.company || 'Verified Enterprise'} (${user.email || 'Buyer'})`;
+
+      const av = document.getElementById('postAvatar');
+      if (user.photoURL) {
+        av.innerHTML = `<img src="${user.photoURL}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" />`;
       } else {
-        // Load RFQs from DB
-        const rfqs = typeof getRFQs === 'function' ? await getRFQs() : [];
-        let actHtml = '';
-
-        if (rfqs && rfqs.length > 0) {
-          actHtml = rfqs.slice(0, 2).map(r => `
-            <div class="dash-activity-item">
-              <div><strong>${r.commodity || 'Commodity'} (${r.tonnage || 25} MT)</strong><span>Dest: ${r.destination || 'India Port'}</span></div>
-              <span class="dash-status" style="color:#10b981;">Saved in DB</span>
-            </div>`).join('');
-        } else {
-          actHtml = `
-            <div class="dash-activity-item">
-              <div><strong>Sortex Rajma Seeds (24 MT)</strong><span>Consignment #SYT-8941 · Chennai Port</span></div>
-              <span class="dash-status" style="color:#10b981;">In Transit</span>
-            </div>
-            <div class="dash-activity-item">
-              <div><strong>Salem Finger Turmeric (18 MT)</strong><span>APEDA Lab Cert #LAB-2026</span></div>
-              <span class="dash-status" style="color:#0f4c81;">Approved</span>
-            </div>`;
-        }
-
-        document.getElementById('dashActivity').innerHTML = actHtml;
+        av.textContent = (user.name ? user.name.charAt(0).toUpperCase() : 'S');
       }
 
       lucide.createIcons();
+
+      setTimeout(() => {
+        window.location.href = '1business.html';
+      }, 1000);
     }
 
-    // ================================================
-    // LOGOUT
-    // ================================================
-    function handleLogout() {
+    function logout() {
+      localStorage.removeItem('syt_session');
       if (typeof auth !== 'undefined' && auth) {
-        try { auth.signOut(); } catch(e) {}
+        try { auth.signOut(); } catch (e) {}
       }
-      document.getElementById('allForms').style.display = 'block';
+      document.getElementById('formsWrap').style.display = 'block';
       document.getElementById('authTabs').style.display = 'flex';
-      document.getElementById('dashScreen').style.display = 'none';
-      setMode('login');
-      showToast('Signed out successfully.', 'info');
+      document.getElementById('postLoginView').style.display = 'none';
+      switchTab('login');
+      triggerToast('Signed out successfully.', 'info');
     }
 
-    // ================================================
-    // HELPERS
-    // ================================================
-    function setLoading(btn, loading) {
-      btn.classList.toggle('loading', loading);
-      btn.innerHTML = loading
-        ? `<div class="spinner"></div><span>Please wait...</span>`
-        : btn.dataset.defaultContent || btn.innerHTML;
-      if (!loading) lucide.createIcons();
-    }
-
+    // --------------------------------------------------------------------------
+    // 6. UTILITIES
+    // --------------------------------------------------------------------------
     function autofillDemo(type) {
       if (type === 'buyer') {
         document.getElementById('loginEmail').value = 'buyer@globalagro.com';
-        document.getElementById('loginPw').value = 'buyer123';
-        showToast('Demo buyer credentials filled!', 'info');
-      } else {
+        document.getElementById('loginPassword').value = 'buyer123';
+        triggerToast('Demo Buyer credentials populated!', 'info');
+      } else if (type === 'admin') {
         document.getElementById('adminEmail').value = 'admin@sriyesaswitraders.com';
-        document.getElementById('adminPw').value = 'suresh@admin2026';
+        document.getElementById('adminPassword').value = 'suresh@admin2026';
         document.getElementById('adminPin').value = '531116';
-        showToast('Demo admin credentials filled!', 'info');
+        triggerToast('Demo Admin & Master PIN populated!', 'info');
+      }
+    }
+
+    function setLoading(btn, isLoading) {
+      btn.disabled = isLoading;
+      if (isLoading) {
+        btn.dataset.html = btn.innerHTML;
+        btn.innerHTML = `<div class="loading-spinner"></div><span>Authenticating...</span>`;
+      } else {
+        btn.innerHTML = btn.dataset.html || btn.innerHTML;
+        lucide.createIcons();
       }
     }
 
     let toastTimer;
-    function showToast(msg, type = 'info') {
-      const t = document.getElementById('toast');
-      const icons = { info: 'info', success: 'check-circle', error: 'alert-circle' };
-      const colors = { info: 'var(--gold)', success: '#10b981', error: '#ef4444' };
-      t.innerHTML = `<i data-lucide="${icons[type]}" style="width:16px;height:16px;color:${colors[type]};flex-shrink:0;"></i><span>${msg}</span>`;
-      t.className = `toast visible ${type}`;
-      lucide.createIcons();
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => t.classList.remove('visible'), 3500);
-    }
+    function triggerToast(msg, type = 'info') {
+      const elem = document.getElementById('toastElem');
+      const txt = document.getElementById('toastText');
+      const icon = document.getElementById('toastIcon');
 
-    // ── Full-Screen Logo/Title Intro Video Animation ───────────────
-    let introFinished = false;
+      txt.textContent = msg;
+      elem.className = `portal-toast visible ${type}`;
 
-    function dismissIntroSplash() {
-      if (introFinished) return;
-      introFinished = true;
-
-      const overlay = document.getElementById('introSplashOverlay');
-      const video = document.getElementById('introLogoVideo');
-
-      if (overlay) {
-        overlay.classList.add('is-hidden');
-        // Stop video playback and cleanup after transition completes
-        setTimeout(() => {
-          if (video) {
-            try {
-              video.pause();
-              video.src = '';
-              video.load();
-            } catch (e) {}
-          }
-          if (overlay && overlay.parentNode) {
-            overlay.parentNode.removeChild(overlay);
-          }
-        }, 900);
+      if (type === 'success') {
+        icon.setAttribute('data-lucide', 'check-circle');
+        icon.style.color = '#10b981';
+      } else if (type === 'error') {
+        icon.setAttribute('data-lucide', 'alert-circle');
+        icon.style.color = '#ef4444';
+      } else {
+        icon.setAttribute('data-lucide', 'sparkles');
+        icon.style.color = 'var(--gold)';
       }
+      lucide.createIcons();
+
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => elem.classList.remove('visible'), 3500);
     }
 
-    // Init
+    // --------------------------------------------------------------------------
+    // 7. INITIALIZATION & VIDEO AUTOPLAY
+    // --------------------------------------------------------------------------
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
 
-      const video = document.getElementById('introLogoVideo');
-      if (video) {
-        // 1. When video naturally finishes playing (once)
-        video.addEventListener('ended', dismissIntroSplash);
+      // Video autoplay guarantee with sound-muted fallback
+      if (theaterVid) {
+        theaterVid.play().catch(err => {
+          console.warn('Theater autoplay fallback:', err);
+          theaterVid.muted = true;
+          theaterVid.play().catch(e => console.warn(e));
+        });
 
-        // 2. Autoplay trigger with muted fallback guarantee
-        const playPromise = video.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(err => {
-            console.warn('Autoplay requires muted state:', err);
-            video.muted = true;
-            video.play().catch(e => {
-              console.warn('Video failed to play, dismissing splash overlay:', e);
-              dismissIntroSplash();
-            });
-          });
-        }
-
-        // 3. Fallback safety timer (11.5s for 10s video) in case video event fails
+        // Naturally transitions into login card after intro plays first loop (2.85s)
         setTimeout(() => {
-          if (!introFinished) {
-            dismissIntroSplash();
-          }
-        }, 11500);
+          if (!introDone) closeIntroTheater();
+        }, 2900);
+      } else {
+        closeIntroTheater();
       }
 
-      // Check Firebase auth state persistence
-      if (typeof auth !== 'undefined' && auth) {
-        auth.onAuthStateChanged(user => {
-          if (user) {
-            renderDashboard({
-              name: user.displayName || 'Enterprise Buyer',
-              email: user.email,
-              photoURL: user.photoURL,
-              role: 'buyer'
-            });
-          }
+      if (cardVid) {
+        cardVid.play().catch(e => {
+          cardVid.muted = true;
+          cardVid.play().catch(err => console.warn(err));
         });
       }
     });

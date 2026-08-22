@@ -1097,7 +1097,6 @@
       <video
         id="introLogoVideo"
         class="intro-logo-video"
-        src="logo.mp4"
         autoplay
         muted
         playsinline
@@ -1105,7 +1104,10 @@
         controlslist="nodownload nofullscreen noremoteplayback"
         disablepictureinpicture
         oncontextmenu="return false;"
-      ></video>
+      >
+        <source src="logo_h264.mp4" type="video/mp4" />
+        <source src="logo.mp4" type="video/mp4" />
+      </video>
       <button id="skipIntroBtn" class="skip-intro-btn" onclick="dismissIntroSplash()" title="Skip Intro">
         <span>Skip</span>
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
