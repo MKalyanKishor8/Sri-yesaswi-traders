@@ -1,0 +1,1965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+
+  <!-- SESSION GUARD: Redirect to login if not authenticated -->
+  <script>
+    (function() {
+      var session = localStorage.getItem('syt_session');
+      if (!session) {
+        window.location.replace('auth.html');
+      }
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sri Yesaswi Traders | Bulk Agro Sourcing & Exports</title>
+  <meta name="description" content="Sri Yesaswi Traders - Founded by M.V SURESH KUMAR. Direct bulk sourcing partner for Rajma Seeds, Finger Turmeric, Premium Black Pepper, Raw Green Coffee Seeds, and Dried Ginger." />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Firebase App & Services SDKs (v10.8.0 Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+
+  <style>
+    :root {
+      --primary: #0f4c81;
+      --primary-dark: #082d4f;
+      --primary-light: #1e6cb0;
+      --accent: #d4af37;
+      --accent-hover: #b89428;
+      --accent-light: #f7edd2;
+      --dark: #0a192f;
+      --dark-card: #112240;
+      --light-bg: #f8fafc;
+      --white: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border-color: rgba(226, 232, 240, 0.9);
+      --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-headings: 'Outfit', sans-serif;
+      --transition-fast: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      --shadow-sm: 0 2px 8px rgba(15, 76, 129, 0.06);
+      --shadow-md: 0 8px 24px rgba(15, 76, 129, 0.1);
+      --shadow-lg: 0 16px 36px rgba(15, 76, 129, 0.14);
+      --shadow-gold: 0 8px 24px rgba(212, 175, 55, 0.25);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+    }
+
+    body {
+      font-family: var(--font-body);
+      color: var(--text-main);
+      background-color: var(--light-bg);
+      line-height: 1.65;
+      overflow-x: hidden;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+      background: none;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Top Bar */
+    .top-bar {
+      background: var(--dark);
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 0.825rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .top-bar-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .top-bar-left, .top-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .top-bar-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    /* Main Navigation */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      transition: var(--transition-fast);
+    }
+
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 0;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+    }
+
+    .logo-icon {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: var(--white);
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(15, 76, 129, 0.25);
+    }
+
+    .brand-text-main {
+      font-family: var(--font-headings);
+      font-weight: 900;
+      font-size: 1.25rem;
+      color: var(--primary-dark);
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      display: block;
+    }
+
+    .brand-text-sub {
+      font-family: var(--font-headings);
+      font-weight: 700;
+      font-size: 0.75rem;
+      color: var(--accent);
+      letter-spacing: 0.18em;
+      line-height: 1;
+      display: block;
+    }
+
+    .nav-menu {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-link {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      transition: var(--transition-fast);
+      position: relative;
+      padding: 0.35rem 0;
+      cursor: pointer;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: var(--primary);
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--accent);
+      transition: var(--transition-fast);
+    }
+
+    .nav-link:hover::after, .nav-link.active::after {
+      width: 100%;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      transition: var(--transition-fast);
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: var(--white);
+      box-shadow: 0 4px 14px rgba(15, 76, 129, 0.3);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(15, 76, 129, 0.4);
+    }
+
+    .btn-accent {
+      background: var(--accent);
+      color: var(--dark);
+      box-shadow: var(--shadow-gold);
+    }
+
+    .btn-accent:hover {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      border: 2px solid var(--white);
+      color: var(--white);
+    }
+
+    .btn-outline:hover {
+      background: var(--white);
+      color: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    /* Hero Section */
+    .hero {
+      position: relative;
+      background: linear-gradient(135deg, rgba(8, 45, 79, 0.94) 0%, rgba(15, 76, 129, 0.88) 100%),
+                  url('https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;
+      color: var(--white);
+      padding: 6.5rem 0 5.5rem;
+      overflow: hidden;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(212, 175, 55, 0.18);
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      color: #ffe699;
+      padding: 0.4rem 1rem;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.05em;
+    }
+
+    .hero-title {
+      font-family: var(--font-headings);
+      font-size: 3.25rem;
+      font-weight: 900;
+      line-height: 1.15;
+      margin-bottom: 1.5rem;
+      max-width: 820px;
+    }
+
+    .hero-title span {
+      color: var(--accent);
+    }
+
+    .hero-desc {
+      font-size: 1.15rem;
+      color: rgba(255, 255, 255, 0.85);
+      max-width: 720px;
+      margin-bottom: 2.25rem;
+      line-height: 1.7;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+      margin-bottom: 3.5rem;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      padding-top: 2.5rem;
+    }
+
+    .stat-item h3 {
+      font-family: var(--font-headings);
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 0.35rem;
+    }
+
+    .stat-item p {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.75);
+      font-weight: 500;
+    }
+
+    /* Section Styles */
+    section {
+      padding: 5rem 0;
+    }
+
+    .section-header {
+      text-align: center;
+      max-width: 720px;
+      margin: 0 auto 3.5rem;
+    }
+
+    .section-tag {
+      display: inline-block;
+      color: var(--primary);
+      font-weight: 800;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 0.5rem;
+    }
+
+    .section-title {
+      font-family: var(--font-headings);
+      font-size: 2.35rem;
+      font-weight: 800;
+      color: var(--primary-dark);
+      line-height: 1.25;
+      margin-bottom: 1rem;
+    }
+
+    .section-subtitle {
+      color: var(--text-muted);
+      font-size: 1rem;
+      line-height: 1.65;
+    }
+
+    /* Grids */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 3rem;
+      align-items: center;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2rem;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 2rem;
+    }
+
+    /* Founder & Leadership Card */
+    .founder-card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 2.5rem;
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border-color);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .founder-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 6px;
+      height: 100%;
+      background: linear-gradient(to bottom, var(--accent), var(--primary));
+    }
+
+    .founder-header {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .founder-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      font-weight: 800;
+      border: 3px solid var(--accent);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .founder-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+    }
+
+    .founder-name {
+      font-family: var(--font-headings);
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--primary-dark);
+    }
+
+    .founder-role {
+      color: var(--accent-hover);
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    /* Product Cards */
+    .product-filter {
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+    }
+
+    .filter-btn {
+      padding: 0.6rem 1.4rem;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      background: var(--white);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      transition: var(--transition-fast);
+    }
+
+    .filter-btn.active, .filter-btn:hover {
+      background: var(--primary);
+      color: var(--white);
+      border-color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .product-card {
+      background: var(--white);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-color);
+      transition: var(--transition-smooth);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .product-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-lg);
+      border-color: rgba(15, 76, 129, 0.2);
+    }
+
+    .product-img-wrapper {
+      width: 100%;
+      height: 220px;
+      overflow: hidden;
+      background: #e2e8f0;
+      position: relative;
+    }
+
+    .product-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+
+    .product-card:hover .product-img {
+      transform: scale(1.05);
+    }
+
+    .product-body {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+
+    .product-tag {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      margin-bottom: 0.35rem;
+    }
+
+    .product-title {
+      font-family: var(--font-headings);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 0.5rem;
+    }
+
+    .product-specs {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 1.25rem;
+      flex-grow: 1;
+      line-height: 1.6;
+    }
+
+    /* Services / Value Props */
+    .feature-box {
+      background: var(--white);
+      padding: 2.25rem;
+      border-radius: 14px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-color);
+      transition: var(--transition-smooth);
+    }
+
+    .feature-box:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--primary-light);
+    }
+
+    .feature-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 12px;
+      background: rgba(15, 76, 129, 0.08);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+    }
+
+    /* Contact / RFQ Form */
+    .contact-section {
+      background: linear-gradient(135deg, #091f38 0%, #0f4c81 100%);
+      color: var(--white);
+    }
+
+    .contact-card {
+      background: var(--white);
+      color: var(--text-main);
+      padding: 2.5rem;
+      border-radius: 16px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 0.4rem;
+    }
+
+    .form-input, .form-select {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      transition: var(--transition-fast);
+    }
+
+    .form-input:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.15);
+    }
+
+    /* Footer */
+    footer {
+      background: var(--dark);
+      color: var(--white);
+      padding: 5rem 0 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .footer-link-btn {
+      color: rgba(255, 255, 255, 0.7);
+      transition: var(--transition-fast);
+      font-size: 0.9rem;
+      display: inline-block;
+      text-align: left;
+    }
+
+    .footer-link-btn:hover {
+      color: var(--accent);
+      transform: translateX(4px);
+    }
+
+    /* Floating Trade Desk Assistant Chat Box */
+    .chat-launcher-btn {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: var(--white);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 25px rgba(15, 76, 129, 0.4), 0 0 0 2px rgba(212, 175, 55, 0.4);
+      z-index: 10000;
+      cursor: pointer;
+      border: none;
+      outline: none;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .chat-launcher-btn:hover {
+      transform: scale(1.08) translateY(-2px);
+      box-shadow: 0 12px 30px rgba(15, 76, 129, 0.5), 0 0 0 3px rgba(212, 175, 55, 0.7);
+    }
+
+    .chat-online-badge {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 14px;
+      height: 14px;
+      background-color: #10b981;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      animation: pulse-badge 2s infinite;
+    }
+
+    @keyframes pulse-badge {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    /* Chat Window */
+    .chat-window {
+      position: fixed;
+      bottom: 95px;
+      right: 25px;
+      width: 380px;
+      max-width: calc(100vw - 30px);
+      height: 530px;
+      max-height: calc(100vh - 120px);
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(10, 25, 47, 0.25), 0 0 0 1px rgba(15, 76, 129, 0.1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 10000;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(20px) scale(0.95);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .chat-window.is-open {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Chat Header */
+    .chat-header {
+      background: linear-gradient(135deg, var(--dark) 0%, var(--primary-dark) 100%);
+      color: var(--white);
+      padding: 0.9rem 1.15rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid var(--accent);
+    }
+
+    .chat-header-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .chat-avatar {
+      width: 38px;
+      height: 38px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1.5px solid var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      position: relative;
+    }
+
+    .chat-avatar-status {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 10px;
+      height: 10px;
+      background: #10b981;
+      border: 2px solid var(--dark);
+      border-radius: 50%;
+    }
+
+    .chat-title {
+      font-family: var(--font-headings);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.2;
+    }
+
+    .chat-subtitle {
+      font-size: 0.72rem;
+      color: rgba(255, 255, 255, 0.7);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .chat-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .chat-btn-icon {
+      background: rgba(255, 255, 255, 0.08);
+      border: none;
+      color: rgba(255, 255, 255, 0.8);
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-fast);
+    }
+
+    .chat-btn-icon:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: var(--white);
+    }
+
+    /* Chat Messages Body */
+    .chat-messages {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      background: #f8fafc;
+    }
+
+    .chat-msg {
+      display: flex;
+      flex-direction: column;
+      max-width: 85%;
+      animation: fadeInMsg 0.25s ease-out;
+    }
+
+    @keyframes fadeInMsg {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .chat-msg.bot {
+      align-self: flex-start;
+    }
+
+    .chat-msg.user {
+      align-self: flex-end;
+    }
+
+    .chat-bubble {
+      padding: 0.75rem 0.95rem;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    .chat-msg.bot .chat-bubble {
+      background: #ffffff;
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-bottom-left-radius: 4px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    }
+
+    .chat-msg.user .chat-bubble {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: var(--white);
+      border-bottom-right-radius: 4px;
+    }
+
+    .chat-time {
+      font-size: 0.65rem;
+      color: #94a3b8;
+      margin-top: 0.25rem;
+      padding: 0 0.25rem;
+    }
+
+    .chat-msg.user .chat-time {
+      text-align: right;
+    }
+
+    /* Quick Suggestions Chips */
+    .chat-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      padding: 0.5rem 0.9rem;
+      background: #f1f5f9;
+      border-top: 1px solid #e2e8f0;
+      max-height: 95px;
+      overflow-y: auto;
+    }
+
+    .chat-chip {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: var(--primary-dark);
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.3rem 0.6rem;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .chat-chip:hover {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+      transform: translateY(-1px);
+    }
+
+    /* Typing indicator */
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0.6rem 0.9rem;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      border-bottom-left-radius: 4px;
+      width: fit-content;
+    }
+
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      background: #94a3b8;
+      border-radius: 50%;
+      animation: bounceDot 1.4s infinite ease-in-out;
+    }
+
+    .typing-dot:nth-child(1) { animation-delay: 0s; }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounceDot {
+      0%, 80%, 100% { transform: scale(0); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Chat Input Area */
+    .chat-input-area {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.65rem 0.9rem;
+      background: #ffffff;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .chat-input-field {
+      flex: 1;
+      border: 1px solid #cbd5e1;
+      border-radius: 24px;
+      padding: 0.55rem 0.9rem;
+      font-size: 0.85rem;
+      font-family: inherit;
+      outline: none;
+      transition: var(--transition-fast);
+    }
+
+    .chat-input-field:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(15, 76, 129, 0.15);
+    }
+
+    .chat-send-btn {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+      color: var(--primary-dark);
+      border: none;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition-fast);
+      flex-shrink: 0;
+    }
+
+    .chat-send-btn:hover {
+      transform: scale(1.08);
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+    }
+
+    @media (max-width: 480px) {
+      .chat-window {
+        width: calc(100vw - 24px);
+        right: 12px;
+        bottom: 85px;
+        height: calc(100vh - 105px);
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+      .hero-title { font-size: 2.5rem; }
+      .grid-2 { grid-template-columns: 1fr; gap: 2.5rem; }
+      .nav-menu { display: none; }
+    }
+
+    @media (max-width: 768px) {
+      .hero-title { font-size: 2rem; }
+      .section-title { font-size: 1.85rem; }
+      .top-bar-right { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Info Bar -->
+  <div class="top-bar">
+    <div class="container top-bar-inner">
+      <div class="top-bar-left">
+        <div class="top-bar-item">
+          <i data-lucide="map-pin" style="width: 14px; height: 14px; color: var(--accent);"></i>
+          <span>Narsipatnam, Anakapalli, AP - 531116</span>
+        </div>
+        <div class="top-bar-item">
+          <i data-lucide="phone" style="width: 14px; height: 14px; color: var(--accent);"></i>
+          <span>+91 94900 87221</span>
+        </div>
+      </div>
+      <div class="top-bar-right">
+        <div class="top-bar-item">
+          <i data-lucide="user-check" style="width: 14px; height: 14px; color: var(--accent);"></i>
+          <span>Founder: <strong>M.V SURESH KUMAR</strong></span>
+        </div>
+        <a href="mailto:sriyesaswitraders@gmail.com?subject=Bulk%20Commodity%20Quote%20Request" class="top-bar-item" style="color: var(--white); text-decoration: none; display: flex; align-items: center; gap: 0.35rem; transition: var(--transition-fast);" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--white)'" title="Email for Direct Quotation">
+          <i data-lucide="mail" style="width: 14px; height: 14px; color: var(--accent);"></i>
+          <span>sriyesaswitraders@gmail.com</span>
+        </a>
+        <a href="https://instagram.com/yesaswitraders" target="_blank" rel="noopener noreferrer" class="top-bar-item" style="color: var(--white); text-decoration: none; display: flex; align-items: center; gap: 0.35rem; transition: var(--transition-fast);" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--white)'" title="Follow @yesaswitraders on Instagram">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="color: var(--accent); flex-shrink: 0;"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          <span>Instagram</span>
+        </a>
+        <a href="https://x.com/yesaswitraders" target="_blank" rel="noopener noreferrer" class="top-bar-item" style="color: var(--white); text-decoration: none; display: flex; align-items: center; gap: 0.35rem; transition: var(--transition-fast);" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--white)'" title="Follow @yesaswitraders on Twitter">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="color: var(--accent); flex-shrink: 0;"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg>
+          <span>Twitter</span>
+        </a>
+        <div id="topBarUserPill" class="top-bar-item" style="display: flex; align-items: center; gap: 0.5rem; background: rgba(212,175,55,0.15); border: 1px solid rgba(212,175,55,0.35); border-radius: 20px; padding: 0.2rem 0.7rem; cursor: default;">
+          <i data-lucide="user-check" style="width: 13px; height: 13px; color: var(--accent);"></i>
+          <span id="topBarUserName" style="color: var(--accent); font-weight: 700;">Loading...</span>
+          <span style="color: rgba(255,255,255,0.3); margin: 0 0.1rem;">|</span>
+          <button onclick="siteLogout()" style="background: none; border: none; color: rgba(255,255,255,0.65); font-size: 0.75rem; font-weight: 700; cursor: pointer; padding: 0; transition: color 0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='rgba(255,255,255,0.65)'" title="Sign Out">Sign Out</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header / Navigation -->
+  <header>
+    <div class="container navbar">
+      <div class="brand-logo" onclick="navigateTo('home')">
+        <div class="logo-icon">
+          <i data-lucide="shield-check" style="width: 26px; height: 26px;"></i>
+        </div>
+        <div>
+          <span class="brand-text-main">SRI YESASWI</span>
+          <span class="brand-text-sub">TRADERS</span>
+        </div>
+      </div>
+
+      <ul class="nav-menu">
+        <li><a class="nav-link active" onclick="navigateTo('home')">Home</a></li>
+        <li><a class="nav-link" onclick="navigateTo('about')">About Us</a></li>
+        <li><a class="nav-link" onclick="navigateTo('products')">Commodities</a></li>
+        <li><a class="nav-link" onclick="navigateTo('services')">Supply Chain</a></li>
+        <li><a class="nav-link" onclick="navigateTo('contact')">Trade Desk</a></li>
+      </ul>
+
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <button onclick="siteLogout()" class="btn btn-outline" style="padding: 0.55rem 1rem; font-size: 0.875rem; display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; background: transparent;">
+          <i data-lucide="log-out" style="width: 15px; height: 15px;"></i>
+          <span id="navUserName">Account</span>
+        </button>
+        <button class="btn btn-primary" onclick="navigateTo('contact')">
+          <span>Request Quote</span>
+          <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero" id="home">
+    <div class="container">
+      <div class="hero-badge">
+        <i data-lucide="award" style="width: 16px; height: 16px; color: var(--accent);"></i>
+        <span>DIRECT COMMODITY EXPORTS & BULK SOURCING</span>
+      </div>
+      <h1 class="hero-title">
+        Direct Bulk Sourcing of <span>Rajma Seeds, Finger Turmeric, Premium Black Pepper, Raw Coffee & Ginger</span>
+      </h1>
+      <p class="hero-desc">
+        Under the visionary leadership of <strong>M.V SURESH KUMAR</strong>, Sri Yesaswi Traders is your certified partner for premium Rajma seeds, high-curcumin Finger Turmeric, bold Premium Black Pepper, unroasted raw green coffee seeds, and dried ginger.
+      </p>
+      <div class="hero-actions">
+        <button class="btn btn-accent" onclick="navigateTo('products')">
+          <i data-lucide="package" style="width: 18px; height: 18px;"></i>
+          <span>Explore 5 Core Commodities</span>
+        </button>
+        <button class="btn btn-outline" onclick="navigateTo('contact')">
+          <i data-lucide="file-text" style="width: 18px; height: 18px;"></i>
+          <span>Request Price Locking Sheet</span>
+        </button>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat-item">
+          <h3>100%</h3>
+          <p>Farm Direct Sourcing</p>
+        </div>
+        <div class="stat-item">
+          <h3>FSSAI & APEDA</h3>
+          <p>Certified Quality Standards</p>
+        </div>
+        <div class="stat-item">
+          <h3>24 hrs</h3>
+          <p>Trade Desk Turnaround</p>
+        </div>
+        <div class="stat-item">
+          <h3>Pan-India & Global</h3>
+          <p>Multi-modal Logistics</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section with Founder Spotlight -->
+  <section id="about">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">About Our Enterprise</span>
+        <h2 class="section-title">Built on Trust, Purity, and Direct-Source Excellence</h2>
+        <p class="section-subtitle">Connecting regional cultivation belts and modern processing facilities directly with domestic and global trade partners.</p>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <h3 style="font-family: var(--font-headings); font-size: 1.85rem; color: var(--primary-dark); margin-bottom: 1.25rem; font-weight: 800;">
+            Pioneering Agricultural & Commodity Trade
+          </h3>
+          <p style="color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.7;">
+            Headquartered in Narsipatnam (Anakapalli district, Andhra Pradesh), <strong>Sri Yesaswi Traders</strong> was established to streamline bulk procurement. We eliminate multi-tier intermediaries to deliver unmatched freshness, certified grade purity, and competitive market pricing.
+          </p>
+          <p style="color: var(--text-muted); margin-bottom: 1.75rem; line-height: 1.7;">
+            From high-curcumin Nizamabad finger turmeric and sun-dried Cochin ginger to Sortex-cleaned Rajma seeds, bold Premium Black Pepper, and unroasted raw green coffee seeds, our rigorous quality checks ensure every consignment meets top standards.
+          </p>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <i data-lucide="check-circle" style="color: var(--primary); width: 20px; height: 20px;"></i>
+              <span style="font-weight: 600; font-size: 0.9rem;">Sortex Machine Cleaned</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <i data-lucide="check-circle" style="color: var(--primary); width: 20px; height: 20px;"></i>
+              <span style="font-weight: 600; font-size: 0.9rem;">Custom Bulk Packaging</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <i data-lucide="check-circle" style="color: var(--primary); width: 20px; height: 20px;"></i>
+              <span style="font-weight: 600; font-size: 0.9rem;">Laboratory Lab Tested</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <i data-lucide="check-circle" style="color: var(--primary); width: 20px; height: 20px;"></i>
+              <span style="font-weight: 600; font-size: 0.9rem;">FOB/CIF Price Transparency</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Founder Spotlight Card -->
+        <div class="founder-card">
+          <div class="founder-header">
+            <div class="founder-avatar">
+              <img src="founder.jpg" alt="M.V SURESH KUMAR - Founder & Managing Director" onerror="this.src='FOUNDER PIC.jpg'" />
+            </div>
+            <div>
+              <h4 class="founder-name">M.V SURESH KUMAR</h4>
+              <p class="founder-role">FOUNDER & MANAGING DIRECTOR</p>
+            </div>
+          </div>
+          <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.7; margin-bottom: 1.5rem; font-style: italic;">
+            "Our philosophy at Sri Yesaswi Traders is anchored in absolute transparency, unwavering quality control, and building lifelong partnerships with buyers across the globe. When you procure from us, you procure reliability."
+          </p>
+          <div style="background-color: var(--light-bg); border-radius: 10px; padding: 1.25rem; border: 1px solid var(--border-color);">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.85rem;">
+              <span style="color: var(--text-muted);">Direct Desk:</span>
+              <strong style="color: var(--primary-dark);">+91 94900 87221</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+              <span style="color: var(--text-muted);">Email:</span>
+              <a href="mailto:sriyesaswitraders@gmail.com?subject=Quote%20Request%20-%20Attn%20M.V%20Suresh%20Kumar" style="color: var(--primary-dark); font-weight: 700; text-decoration: none; transition: var(--transition-fast);" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--primary-dark)'" title="Direct Email to Suresh Kumar">sriyesaswitraders@gmail.com</a>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; border-top: 1px dashed var(--border-color); padding-top: 0.5rem; margin-top: 0.5rem;">
+              <span style="color: var(--text-muted);">Twitter:</span>
+              <a href="https://x.com/yesaswitraders" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem; transition: var(--transition-fast);" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--primary)'" title="Follow @yesaswitraders on Twitter">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="color: var(--primary); flex-shrink: 0;"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg>
+                <span>@yesaswitraders</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Product Catalog (5 Core Commodities) -->
+  <section id="products" style="background-color: #f1f5f9;">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Commodity Catalog</span>
+        <h2 class="section-title">Our 5 Core Commodities</h2>
+        <p class="section-subtitle">Directly aggregated, laboratory tested for purity, and packaged to meet export and domestic bulk specifications.</p>
+      </div>
+
+      <!-- Filter Buttons -->
+      <div class="product-filter">
+        <button class="filter-btn active" onclick="filterProducts('all', event)">All 5 Products</button>
+        <button class="filter-btn" onclick="filterProducts('spices', event)">Finger Turmeric, Pepper & Ginger</button>
+        <button class="filter-btn" onclick="filterProducts('seeds', event)">Rajma & Raw Green Coffee</button>
+      </div>
+
+      <!-- Products Grid -->
+      <div class="grid-3" id="productsGrid">
+
+        <!-- 1. RAJMA SEEDS -->
+        <div class="product-card" data-category="seeds">
+          <div class="product-img-wrapper">
+            <img src="red-rajma-seed.jpeg" alt="Rajma Seeds" class="product-img" />
+          </div>
+          <div class="product-body">
+            <span class="product-tag">Pulses & Legumes</span>
+            <h4 class="product-title">1. Premium Rajma Seeds</h4>
+            <p class="product-specs">
+              Red Kidney Beans, Chitra & Sharmili varieties. 100% Sortex machine cleaned, uniform bold grain size, rich in protein. Moisture &lt; 11%, Purity 99.5%.
+            </p>
+            <button class="btn btn-primary" style="width: 100%;" onclick="navigateTo('contact')">Request Spec Sheet</button>
+          </div>
+        </div>
+
+        <!-- 2. FINGER TURMERIC -->
+        <div class="product-card" data-category="spices">
+          <div class="product-img-wrapper">
+            <img src="finger turmeric.jpg" alt="Finger Turmeric" class="product-img" />
+          </div>
+          <div class="product-body">
+            <span class="product-tag">Spices & Roots</span>
+            <h4 class="product-title">2. Finger Turmeric</h4>
+            <p class="product-specs">
+              High Curcumin (3.5% – 5.2%), Double Polished, Nizamabad & Salem Export Grades. 100% natural whole fingers, moisture &lt; 10%, zero artificial coloring.
+            </p>
+            <button class="btn btn-primary" style="width: 100%;" onclick="navigateTo('contact')">Request Spec Sheet</button>
+          </div>
+        </div>
+
+        <!-- 3. PREMIUM BLACK PEPPER -->
+        <div class="product-card" data-category="spices">
+          <div class="product-img-wrapper">
+            <img src="images.jpeg" alt="Premium Black Pepper" class="product-img" />
+          </div>
+          <div class="product-body">
+            <span class="product-tag">Whole Spices</span>
+            <h4 class="product-title">3. Premium Black Pepper</h4>
+            <p class="product-specs">
+              Bold 500GL – 570GL density, sun-dried, high piperine content (5% – 7%). Garbled & Ungarbled, pinhead cleaned, moisture &lt; 12%, rich pungent aroma.
+            </p>
+            <button class="btn btn-primary" style="width: 100%;" onclick="navigateTo('contact')">Request Spec Sheet</button>
+          </div>
+        </div>
+
+        <!-- 4. RAW GREEN COFFEE SEEDS -->
+        <div class="product-card" data-category="seeds">
+          <div class="product-img-wrapper">
+            <img src="https://images.unsplash.com/photo-1587734195503-904fca47e0e9?auto=format&fit=crop&w=600&q=80" alt="Raw Green Coffee Seeds" class="product-img" onerror="this.src='https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80'" />
+          </div>
+          <div class="product-body">
+            <span class="product-tag">Plantation Raw Seeds</span>
+            <h4 class="product-title">4. Raw Green Coffee Seeds</h4>
+            <p class="product-specs">
+              Unroasted Arabica Plantation-A, Robusta Cherry & Parchment green beans. Screen 17/18, uniform moisture (10% – 12%), ideal for commercial roasters.
+            </p>
+            <button class="btn btn-primary" style="width: 100%;" onclick="navigateTo('contact')">Request Spec Sheet</button>
+          </div>
+        </div>
+
+        <!-- 5. GINGER -->
+        <div class="product-card" data-category="spices">
+          <div class="product-img-wrapper">
+            <img src="https://images.unsplash.com/photo-1615485500704-8e990f9900f7?auto=format&fit=crop&w=600&q=80" alt="Ginger" class="product-img" onerror="this.src='https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=600&q=80'" />
+          </div>
+          <div class="product-body">
+            <span class="product-tag">Spices & Roots</span>
+            <h4 class="product-title">5. Dried Whole & Powder Ginger</h4>
+            <p class="product-specs">
+              Sun-dried, bleached/unbleached Cochin & Calicut grades. High gingerol pungency, bold fiber-free slices (Sonth), moisture &lt; 12%.
+            </p>
+            <button class="btn btn-primary" style="width: 100%;" onclick="navigateTo('contact')">Request Spec Sheet</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Supply Chain & Services -->
+  <section id="services">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Trade Capabilities</span>
+        <h2 class="section-title">End-to-End Commodity Logistics</h2>
+        <p class="section-subtitle">We manage your procurement pipeline from farm gate collection to final port delivery.</p>
+      </div>
+
+      <div class="grid-3">
+        <div class="feature-box">
+          <div class="feature-icon">
+            <i data-lucide="truck" style="width: 28px; height: 28px;"></i>
+          </div>
+          <h4 style="font-family: var(--font-headings); font-size: 1.25rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 0.75rem;">
+            Farm Mandi Direct Sourcing
+          </h4>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">
+            Direct aggregation from major cultivation belts across Andhra Pradesh, Telangana, Kerala, Karnataka, and national mandis.
+          </p>
+        </div>
+
+        <div class="feature-box">
+          <div class="feature-icon">
+            <i data-lucide="check-square" style="width: 28px; height: 28px;"></i>
+          </div>
+          <h4 style="font-family: var(--font-headings); font-size: 1.25rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 0.75rem;">
+            Quality Testing & Certification
+          </h4>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">
+            Moisture indexing, aflatoxin testing, pesticide residue screening, and third-party inspection (SGS/Bureau Veritas).
+          </p>
+        </div>
+
+        <div class="feature-box">
+          <div class="feature-icon">
+            <i data-lucide="layers" style="width: 28px; height: 28px;"></i>
+          </div>
+          <h4 style="font-family: var(--font-headings); font-size: 1.25rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 0.75rem;">
+            Custom Bulk Packing
+          </h4>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">
+            Jute gunny bags, PP woven bags, hermetic GrainPro bags, vacuum pack pouches, and customized private labelling.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact & Request Quote Section -->
+  <section class="contact-section" id="contact">
+    <div class="container">
+      <div class="grid-2">
+        <div>
+          <span class="hero-badge" style="background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: var(--accent);">
+            COMMODITY TRADE DESK
+          </span>
+          <h2 style="font-family: var(--font-headings); font-size: 2.75rem; font-weight: 900; line-height: 1.2; margin-bottom: 1.25rem;">
+            Request a Price Lock & Consignment Quote
+          </h2>
+          <p style="color: rgba(255, 255, 255, 0.85); font-size: 1.05rem; margin-bottom: 2rem; line-height: 1.7;">
+            Connect directly with our commercial trading desk led by <strong>M.V SURESH KUMAR</strong>. Receive customized specifications, container loading schedules, and FOB/CIF rates.
+          </p>
+
+          <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <div style="background: rgba(255,255,255,0.1); width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--accent);">
+                <i data-lucide="map-pin" style="width: 22px; height: 22px;"></i>
+              </div>
+              <div>
+                <span style="font-size: 0.8rem; color: rgba(255,255,255,0.6); display: block;">Headquarters</span>
+                <span style="font-size: 0.95rem; font-weight: 600;">24-3-88/1, Thotavari Street, Narsipatnam, Anakapalli, AP - 531116</span>
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <div style="background: rgba(255,255,255,0.1); width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--accent);">
+                <i data-lucide="phone-call" style="width: 22px; height: 22px;"></i>
+              </div>
+              <div>
+                <span style="font-size: 0.8rem; color: rgba(255,255,255,0.6); display: block;">Direct Commercial Desk</span>
+                <span style="font-size: 0.95rem; font-weight: 600;">+91 94900 87221</span>
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <div style="background: rgba(255,255,255,0.1); width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--accent);">
+                <i data-lucide="mail" style="width: 22px; height: 22px;"></i>
+              </div>
+              <div>
+                <span style="font-size: 0.8rem; color: rgba(255,255,255,0.6); display: block;">Official Inquiries & Direct Quotes</span>
+                <a href="mailto:sriyesaswitraders@gmail.com?subject=Bulk%20Commodity%20Quote%20Request" style="font-size: 0.95rem; font-weight: 600; color: var(--white); text-decoration: none; display: flex; align-items: center; gap: 0.35rem; transition: var(--transition-fast);" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--white)'" title="Click to Email Trade Desk">
+                  <span>sriyesaswitraders@gmail.com</span>
+                  <i data-lucide="external-link" style="width: 14px; height: 14px;"></i>
+                </a>
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <div style="background: rgba(255,255,255,0.1); width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--accent);">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg>
+              </div>
+              <div>
+                <span style="font-size: 0.8rem; color: rgba(255,255,255,0.6); display: block;">Official Twitter</span>
+                <a href="https://x.com/yesaswitraders" target="_blank" rel="noopener noreferrer" style="font-size: 0.95rem; font-weight: 600; color: var(--white); text-decoration: none; display: flex; align-items: center; gap: 0.4rem; transition: var(--transition-fast);" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--white)'" title="Follow @yesaswitraders on Twitter">
+                  <span>@yesaswitraders</span>
+                  <i data-lucide="external-link" style="width: 14px; height: 14px;"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RFQ Form -->
+        <div class="contact-card" id="contactFormContainer">
+          <h3 style="font-family: var(--font-headings); font-size: 1.5rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 0.5rem;">
+            Submit Sourcing Request
+          </h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+            Our trade desk will email your quotation within 24 hours.
+          </p>
+
+          <form onsubmit="handleFormSubmit(event)" id="rfqForm">
+            <div class="form-group">
+              <label class="form-label">Full Name / Company Name</label>
+              <input type="text" id="rfqName" class="form-input" placeholder="e.g. John Doe / Global Enterprises" required />
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label class="form-label">Contact Phone Number</label>
+                <input type="tel" id="rfqPhone" class="form-input" placeholder="+91..." required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" id="rfqEmail" class="form-input" placeholder="name@company.com" required />
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label class="form-label">Commodity Required</label>
+                <select class="form-select" id="rfqCommodity" required>
+                  <option value="">Select commodity...</option>
+                  <option value="Rajma Seeds (Red / Chitra Kidney Beans)">1. Rajma Seeds (Red / Chitra Kidney Beans)</option>
+                  <option value="Finger Turmeric (Double Polished / Whole)">2. Finger Turmeric (Double Polished / Whole)</option>
+                  <option value="Premium Black Pepper (Whole Bold)">3. Premium Black Pepper (Whole Bold)</option>
+                  <option value="Raw Green Coffee Seeds (Arabica & Robusta)">4. Raw Green Coffee Seeds (Arabica & Robusta)</option>
+                  <option value="Dried Ginger / Powder (Sonth)">5. Dried Ginger / Powder (Sonth)</option>
+                  <option value="Multiple Commodities">Multiple Commodities / Mixed Order</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Estimated Tonnage (MT)</label>
+                <input type="number" id="rfqTonnage" class="form-input" placeholder="e.g. 25 MT" min="1" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Destination Port / Delivery Location</label>
+              <input type="text" id="rfqDestination" class="form-input" placeholder="e.g. Chennai Port / Dubai / Nhava Sheva" required />
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.9rem;">
+              <span>Submit & Email Sourcing RFQ</span>
+              <i data-lucide="send" style="width: 16px; height: 16px;"></i>
+            </button>
+            <div style="text-align: center; margin-top: 0.75rem;">
+              <span style="font-size: 0.8rem; color: var(--text-muted);">
+                Or send email directly: <a href="mailto:sriyesaswitraders@gmail.com?subject=Bulk%20Commodity%20Quote%20Request" style="color: var(--primary); font-weight: 700; text-decoration: none;">sriyesaswitraders@gmail.com</a>
+              </span>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       Common Footers
+       ========================================== -->
+  <footer>
+    <div style="position: absolute; bottom: -10%; right: -10%; width: 500px; height: 500px; background: radial-gradient(circle, rgba(212, 175, 55, 0.04) 0%, rgba(0,0,0,0) 70%); border-radius: 50%; pointer-events: none;"></div>
+    
+    <div class="container">
+      <div class="grid-4" style="margin-bottom: 4rem; gap: 3rem;">
+        
+        <div>
+          <div onclick="navigateTo('home')" style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; margin-bottom: 1.5rem;">
+            <div style="background-color: var(--white); color: var(--primary); padding: 0.4rem; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+              <i data-lucide="shield" style="width: 20px; height: 20px;"></i>
+            </div>
+            <div>
+              <span style="font-family: var(--font-headings); font-weight: 800; font-size: 1.15rem; color: var(--white); letter-spacing: -0.02em; display: block; line-height: 1.1;">
+                SRI YESASWI
+              </span>
+              <span style="font-family: var(--font-headings); font-weight: 600; font-size: 0.75rem; color: var(--accent); letter-spacing: 0.15em; display: block; line-height: 1;">
+                TRADERS
+              </span>
+            </div>
+          </div>
+          <p style="font-size: 0.9rem; color: rgba(255,255,255,0.65); line-height: 1.6; margin-bottom: 0.75rem;">
+            Your trusted supply chain and bulk sourcing partner for premium Rajma Seeds, Finger Turmeric, Premium Black Pepper, Raw Green Coffee Seeds, and Dried Ginger.
+          </p>
+          <p style="font-size: 0.85rem; color: var(--accent); font-weight: 600; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i data-lucide="user-check" style="width: 16px; height: 16px;"></i>
+            <span>Founder: <strong>M.V SURESH KUMAR</strong></span>
+          </p>
+          <div style="display: flex; gap: 0.75rem;">
+            <a href="https://instagram.com/yesaswitraders" target="_blank" rel="noopener noreferrer" title="Follow @yesaswitraders on Instagram" style="background-color: rgba(255,255,255,0.06); color: var(--white); width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: var(--transition-fast);" onmouseover="this.style.backgroundColor='var(--accent)'; this.style.color='var(--primary-dark)';" onmouseout="this.style.backgroundColor='rgba(255,255,255,0.06)'; this.style.color='var(--white)';">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+              </svg>
+            </a>
+            <a href="https://x.com/yesaswitraders" target="_blank" rel="noopener noreferrer" title="Follow @yesaswitraders on Twitter" style="background-color: rgba(255,255,255,0.06); color: var(--white); width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: var(--transition-fast);" onmouseover="this.style.backgroundColor='var(--accent)'; this.style.color='var(--primary-dark)';" onmouseout="this.style.backgroundColor='rgba(255,255,255,0.06)'; this.style.color='var(--white)';">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <div>
+          <h4 style="color: var(--white); font-size: 1.1rem; margin-bottom: 1.5rem; position: relative; padding-bottom: 0.5rem;">
+            Navigation links
+            <span style="position: absolute; bottom: 0; left: 0; width: 30px; height: 2px; background-color: var(--accent);"></span>
+          </h4>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem;">
+            <li><button onclick="navigateTo('home')" class="footer-link-btn">&rsaquo; Home Page</button></li>
+            <li><button onclick="navigateTo('about')" class="footer-link-btn">&rsaquo; About Us</button></li>
+            <li><button onclick="navigateTo('services')" class="footer-link-btn">&rsaquo; Our Services</button></li>
+            <li><button onclick="navigateTo('products')" class="footer-link-btn">&rsaquo; Product Catalog</button></li>
+            <li><button onclick="navigateTo('contact')" class="footer-link-btn">&rsaquo; Sourcing Desk</button></li>
+            <li><a href="auth.html" class="footer-link-btn" style="text-decoration: none; color: var(--accent);">&rsaquo; Client & Admin Portal</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 style="color: var(--white); font-size: 1.1rem; margin-bottom: 1.5rem; position: relative; padding-bottom: 0.5rem;">
+            Our Headquarters
+            <span style="position: absolute; bottom: 0; left: 0; width: 30px; height: 2px; background-color: var(--accent);"></span>
+          </h4>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 1rem; font-size: 0.9rem; color: rgba(255,255,255,0.75);">
+            <li style="display: flex; gap: 0.75rem; align-items: flex-start;">
+              <i data-lucide="map-pin" style="width: 18px; height: 18px; color: var(--accent); flex-shrink: 0; margin-top: 0.15rem;"></i>
+              <span>24-3-88/1, Thotavari Street, Narsipatnam, Anakapalli, Andhra Pradesh - 531116, India</span>
+            </li>
+            <li style="display: flex; gap: 0.75rem; align-items: center;">
+              <i data-lucide="phone" style="width: 18px; height: 18px; color: var(--accent); flex-shrink: 0;"></i>
+              <span>+91 94900 87221</span>
+            </li>
+            <li style="display: flex; gap: 0.75rem; align-items: center;">
+              <i data-lucide="mail" style="width: 18px; height: 18px; color: var(--accent); flex-shrink: 0;"></i>
+              <a href="mailto:sriyesaswitraders@gmail.com?subject=Bulk%20Commodity%20Quote%20Request" style="color: rgba(255,255,255,0.75); text-decoration: none; transition: var(--transition-fast);" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='rgba(255,255,255,0.75)'" title="Email Sri Yesaswi Traders">sriyesaswitraders@gmail.com</a>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 style="color: var(--white); font-size: 1.1rem; margin-bottom: 1.5rem; position: relative; padding-bottom: 0.5rem;">
+            Market Newsletter
+            <span style="position: absolute; bottom: 0; left: 0; width: 30px; height: 2px; background-color: var(--accent);"></span>
+          </h4>
+          <p style="font-size: 0.9rem; color: rgba(255,255,255,0.7); margin-bottom: 1.25rem;">Subscribe to receive price locks indices and crop harvest updates.</p>
+          <div style="display: flex; position: relative;">
+            <input type="email" placeholder="Email Address" style="width: 100%; padding: 0.75rem 3rem 0.75rem 1rem; border-radius: 8px; background-color: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: var(--white); font-size: 0.875rem;" />
+            <button style="position: absolute; right: 5px; top: 5px; bottom: 5px; width: 36px; background-color: var(--accent); color: var(--primary-dark); border-radius: 6px; display: flex; align-items: center; justify-content: center;" onclick="alert('Successfully subscribed to newsletters.')">
+              <i data-lucide="send" style="width: 16px; height: 16px;"></i>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <hr style="border: 0; height: 1px; background-color: rgba(255,255,255,0.1); margin-bottom: 1.5rem;" />
+      
+      <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; font-size: 0.85rem; color: rgba(255,255,255,0.5);">
+        <span>&copy; 2026 Sri Yesaswi Traders. All rights reserved. Founded by M.V SURESH KUMAR.</span>
+        <div style="display: flex; gap: 1.5rem;">
+          <a href="#" style="transition: var(--transition-fast);" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Privacy Policy</a>
+          <a href="#" style="transition: var(--transition-fast);" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Terms & Conditions</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Trade Desk Assistant Floating Launcher Button -->
+  <button id="chatLauncherBtn" class="chat-launcher-btn" onclick="toggleChatWindow()" aria-label="Open Trade Desk Assistant">
+    <div class="chat-online-badge"></div>
+    <div id="chatIconOpen" style="display: flex; align-items: center; justify-content: center;">
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+    </div>
+    <div id="chatIconClose" style="display: none; align-items: center; justify-content: center;">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </div>
+  </button>
+
+  <!-- Interactive Trade Desk Assistant Chat Box -->
+  <div id="chatWindow" class="chat-window" role="dialog" aria-label="Sri Yesaswi Trade Desk Assistant">
+    <!-- Chat Header -->
+    <div class="chat-header">
+      <div class="chat-header-info">
+        <div class="chat-avatar">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a8 8 0 0 0-8 8c0 3.36 2.06 6.24 5 7.42V20a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-2.58c2.94-1.18 5-4.06 5-7.42a8 8 0 0 0-8-8z"></path>
+            <path d="M9 10h.01"></path>
+            <path d="M15 10h.01"></path>
+          </svg>
+          <div class="chat-avatar-status"></div>
+        </div>
+        <div>
+          <div class="chat-title">Sri Yesaswi Trade Desk</div>
+          <div class="chat-subtitle">
+            <span style="display: inline-block; width: 6px; height: 6px; background-color: #10b981; border-radius: 50%;"></span>
+            <span>Online | Commodity Support</span>
+          </div>
+        </div>
+      </div>
+      <div class="chat-header-actions">
+        <button class="chat-btn-icon" onclick="clearChat()" title="Clear conversation">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+            <path d="M21 3v5h-5"></path>
+            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+            <path d="M8 16H3v5"></path>
+          </svg>
+        </button>
+        <button class="chat-btn-icon" onclick="toggleChatWindow()" title="Close chat">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Chat Messages Scroll Container -->
+    <div id="chatMessages" class="chat-messages">
+      <!-- Welcome Message -->
+      <div class="chat-msg bot">
+        <div class="chat-bubble">
+          <strong>Namaste & Welcome! 🙏</strong><br />
+          I am your <strong>Sri Yesaswi Commodity Assistant</strong>. How can I assist your bulk procurement today? You can ask about specifications, export rates, container load terms, or connect directly with our founder <strong>M.V SURESH KUMAR</strong>.
+        </div>
+        <span class="chat-time">Just now</span>
+      </div>
+    </div>
+
+    <!-- Quick Inquiry Suggestion Chips -->
+    <div class="chat-chips">
+      <button class="chat-chip" onclick="quickAsk('Rajma Seeds Specs & MOQ')">🌾 Rajma Specs & MOQ</button>
+      <button class="chat-chip" onclick="quickAsk('Turmeric Curcumin & Grades')">🌿 Turmeric Curcumin %</button>
+      <button class="chat-chip" onclick="quickAsk('Raw Green Coffee Seeds')">☕ Raw Green Coffee</button>
+      <button class="chat-chip" onclick="quickAsk('Black Pepper & Ginger')">🌶️ Pepper & Ginger</button>
+      <button class="chat-chip" onclick="quickAsk('Request FOB/CIF Price Quote')">📋 Request Price Lock</button>
+      <button class="chat-chip" onclick="quickAsk('Contact Founder Suresh Kumar')">📞 Founder Contact</button>
+    </div>
+
+    <!-- Chat Input Area -->
+    <div class="chat-input-area">
+      <input type="text" id="chatInputField" class="chat-input-field" placeholder="Type commodity inquiry..." onkeydown="handleChatKey(event)" />
+      <button class="chat-send-btn" onclick="sendChatMessage()" title="Send Message">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- JavaScript Functionality -->
+  <script>
+    // ── Session: Load logged-in user's name into header ──────────────────────
+    (function() {
+      try {
+        var raw = localStorage.getItem('syt_session');
+        if (!raw) return;
+        var session = JSON.parse(raw);
+        var displayName = session.name || session.email || 'My Account';
+        // Shorten long names for the navbar
+        var shortName = displayName.length > 20 ? displayName.split(' ')[0] : displayName;
+        var topBarEl = document.getElementById('topBarUserName');
+        var navEl = document.getElementById('navUserName');
+        if (topBarEl) topBarEl.textContent = shortName;
+        if (navEl) navEl.textContent = shortName;
+      } catch(e) {}
+    })();
+
+    // ── Logout: clear session and go back to login page ───────────────────────
+    function siteLogout() {
+      localStorage.removeItem('syt_session');
+      window.location.replace('auth.html');
+    }
+
+    // Smooth scroll navigation
+    function navigateTo(sectionId) {
+      const section = document.getElementById(sectionId);
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    // Product Category Filter
+    function filterProducts(category, evt) {
+      const cards = document.querySelectorAll('.product-card');
+      const buttons = document.querySelectorAll('.filter-btn');
+
+      buttons.forEach(btn => btn.classList.remove('active'));
+      if (evt && evt.target) {
+        evt.target.classList.add('active');
+      }
+
+      cards.forEach(card => {
+        if (category === 'all' || card.getAttribute('data-category') === category) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    // Form Submission Handler & Email Linker
+    function handleFormSubmit(event) {
+      event.preventDefault();
+
+      const name = document.getElementById('rfqName').value.trim();
+      const phone = document.getElementById('rfqPhone').value.trim();
+      const email = document.getElementById('rfqEmail').value.trim();
+      const commodity = document.getElementById('rfqCommodity').value.trim();
+      const tonnage = document.getElementById('rfqTonnage').value.trim();
+      const destination = document.getElementById('rfqDestination').value.trim();
+
+      const subject = encodeURIComponent(`Bulk Sourcing Quote Request - ${commodity} (${tonnage} MT)`);
+      const body = encodeURIComponent(
+        `Dear Sri Yesaswi Traders Commercial Desk (Attn: M.V SURESH KUMAR),\n\n` +
+        `I would like to request a consignment price lock quotation and technical specification sheet for the following bulk procurement requirement:\n\n` +
+        `============================================\n` +
+        `• Name / Enterprise: ${name}\n` +
+        `• Contact Phone: ${phone}\n` +
+        `• Contact Email: ${email}\n` +
+        `• Commodity Required: ${commodity}\n` +
+        `• Estimated Quantity: ${tonnage} MT\n` +
+        `• Destination Port / Delivery: ${destination}\n` +
+        `============================================\n\n` +
+        `Please provide FOB/CIF rates, export packaging standards, and certification details at your earliest convenience.\n\n` +
+        `Best regards,\n${name}`
+      );
+
+      // Save RFQ to Firebase Firestore database
+      if (typeof saveRFQ === 'function') {
+        saveRFQ({ name, phone, email, commodity, tonnage, destination });
+      }
+
+      // Open email client with pre-filled RFQ
+      window.location.href = mailtoUrl;
+
+      const container = document.getElementById('contactFormContainer');
+      container.innerHTML = `
+        <div style="text-align: center; padding: 2rem 1.5rem;">
+          <div style="display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 50%; background-color: #10b981; color: white; margin-bottom: 1rem;">
+            <i data-lucide="check-circle" style="width: 30px; height: 30px;"></i>
+          </div>
+          <h4 style="font-size: 1.3rem; color: var(--primary-dark); font-weight: 800; margin-bottom: 0.4rem;">Consignment RFQ Generated</h4>
+          <p style="font-size: 0.9rem; color: #475569; line-height: 1.6; margin-bottom: 1.25rem;">
+            Your sourcing parameters have been formatted for <strong>sriyesaswitraders@gmail.com</strong>. Click below to open in your preferred email application if it didn't open automatically:
+          </p>
+          <div style="display: flex; flex-direction: column; gap: 0.75rem; max-width: 320px; margin: 0 auto;">
+            <a href="${mailtoUrl}" class="btn btn-primary" style="text-decoration: none; justify-content: center; padding: 0.75rem 1.25rem;">
+              <i data-lucide="mail" style="width: 16px; height: 16px;"></i>
+              <span>Send via Email Client</span>
+            </a>
+            <button onclick="location.reload()" class="btn btn-outline" style="border-color: #cbd5e1; color: #475569; justify-content: center; padding: 0.65rem 1rem;">
+              <span>Submit Another RFQ</span>
+            </button>
+          </div>
+        </div>
+      `;
+      lucide.createIcons();
+    }
+
+    /* ==========================================
+       Interactive Trade Desk Assistant Logic
+       ========================================== */
+    let isChatOpen = false;
+
+    function toggleChatWindow() {
+      const chatWin = document.getElementById('chatWindow');
+      const iconOpen = document.getElementById('chatIconOpen');
+      const iconClose = document.getElementById('chatIconClose');
+      const inputField = document.getElementById('chatInputField');
+
+      isChatOpen = !isChatOpen;
+      if (isChatOpen) {
+        chatWin.classList.add('is-open');
+        iconOpen.style.display = 'none';
+        iconClose.style.display = 'flex';
+        setTimeout(() => inputField.focus(), 300);
+      } else {
+        chatWin.classList.remove('is-open');
+        iconOpen.style.display = 'flex';
+        iconClose.style.display = 'none';
+      }
+    }
+
+    function handleChatKey(e) {
+      if (e.key === 'Enter') {
+        sendChatMessage();
+      }
+    }
+
+    function quickAsk(text) {
+      if (!isChatOpen) toggleChatWindow();
+      const inputField = document.getElementById('chatInputField');
+      inputField.value = text;
+      sendChatMessage();
+    }
+
+    function sendChatMessage() {
+      const inputField = document.getElementById('chatInputField');
+      const message = inputField.value.trim();
+      if (!message) return;
+
+      appendChatMessage('user', message);
+      inputField.value = '';
+
+      showTypingIndicator();
+
+      setTimeout(() => {
+        removeTypingIndicator();
+        const botReply = generateSmartBotReply(message);
+        appendChatMessage('bot', botReply);
+      }, 700);
+    }
+
+    function appendChatMessage(sender, htmlContent) {
+      const messagesContainer = document.getElementById('chatMessages');
+      const timeString = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `chat-msg ${sender}`;
+      msgDiv.innerHTML = `
+        <div class="chat-bubble">${htmlContent}</div>
+        <span class="chat-time">${timeString}</span>
+      `;
+
+      messagesContainer.appendChild(msgDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function showTypingIndicator() {
+      const messagesContainer = document.getElementById('chatMessages');
+      const typingDiv = document.createElement('div');
+      typingDiv.id = 'chatTypingIndicator';
+      typingDiv.className = 'chat-msg bot';
+      typingDiv.innerHTML = `
+        <div class="typing-indicator">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
+      `;
+      messagesContainer.appendChild(typingDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function removeTypingIndicator() {
+      const indicator = document.getElementById('chatTypingIndicator');
+      if (indicator) indicator.remove();
+    }
+
+    function clearChat() {
+      const messagesContainer = document.getElementById('chatMessages');
+      messagesContainer.innerHTML = `
+        <div class="chat-msg bot">
+          <div class="chat-bubble">
+            <strong>Chat reset.</strong><br />
+            How can Sri Yesaswi Traders assist you with bulk commodity sourcing today?
+          </div>
+          <span class="chat-time">Just now</span>
+        </div>
+      `;
+    }
+
+    function generateSmartBotReply(query) {
+      const q = query.toLowerCase();
+
+      // Rajma / Kidney Beans
+      if (q.includes('rajma') || q.includes('kidney bean') || q.includes('sharmili') || q.includes('chitra')) {
+        return `
+          <strong>🌾 Premium Rajma Seeds Overview:</strong><br />
+          • <strong>Varieties:</strong> Red Sharmili, Chitra, Kashmiri Red<br />
+          • <strong>Quality:</strong> 100% Sortex machine cleaned, polished & unpolished<br />
+          • <strong>Purity:</strong> 99% min | Moisture: &lt; 12%<br />
+          • <strong>Packaging:</strong> 25kg / 50kg PP & Jute bags<br />
+          • <strong>MOQ:</strong> 1 FCL (20ft Container / ~24 Metric Tons)<br /><br />
+          <button class="chat-chip" style="margin-top:4px;" onclick="navigateTo('contact')">📩 Request Rajma Spec Sheet</button>
+        `;
+      }
+
+      // Turmeric
+      if (q.includes('turmeric') || q.includes('haldi') || q.includes('curcumin') || q.includes('finger')) {
+        return `
+          <strong>🌿 Finger Turmeric Specifications:</strong><br />
+          • <strong>Grades:</strong> Salem, Nizamabad, Erode Grade A / Double Polished<br />
+          • <strong>Curcumin Content:</strong> 3.0% to 5.2% laboratory certified<br />
+          • <strong>Forms:</strong> Whole Fingers, Bulbs, High-Curcumin Powder<br />
+          • <strong>Standard:</strong> APEDA & FSSAI certified batch testing<br /><br />
+          <button class="chat-chip" onclick="navigateTo('contact')">📩 Request Turmeric Quotation</button>
+        `;
+      }
+
+      // Coffee
+      if (q.includes('coffee') || q.includes('green coffee') || q.includes('arabica') || q.includes('robusta')) {
+        return `
+          <strong>☕ Raw Green Coffee Seeds:</strong><br />
+          • <strong>Types:</strong> Arabica Plantation A, Robusta Cherry AB<br />
+          • <strong>Source:</strong> Shade-grown Eastern Ghats & Araku Valley belts<br />
+          • <strong>Processing:</strong> Washed & Dry Processed unroasted green beans<br />
+          • <strong>Moisture:</strong> 11% - 12% max<br /><br />
+          <button class="chat-chip" onclick="navigateTo('contact')">📩 Lock Green Coffee Rates</button>
+        `;
+      }
+
+      // Black Pepper / Ginger
+      if (q.includes('pepper') || q.includes('ginger') || q.includes('spices') || q.includes('tellicherry')) {
+        return `
+          <strong>🌶️ Black Pepper & Dried Ginger:</strong><br />
+          • <strong>Black Pepper:</strong> Tellicherry & Malabar Garbled (500-570 g/l density, piperine &gt; 4.5%)<br />
+          • <strong>Dried Ginger:</strong> Sun-dried Cochin & Shimoga bold splits and whole slices (low fiber, high gingerol)<br /><br />
+          <button class="chat-chip" onclick="navigateTo('contact')">📩 Inquire Bulk Spice Specs</button>
+        `;
+      }
+
+      // Founder / Suresh Kumar / Contact
+      if (q.includes('suresh') || q.includes('founder') || q.includes('director') || q.includes('contact') || q.includes('phone') || q.includes('address') || q.includes('headquarters')) {
+        return `
+          <strong>👤 Sri Yesaswi Traders Leadership:</strong><br />
+          • <strong>Founder & MD:</strong> M.V SURESH KUMAR<br />
+          • <strong>Direct Commercial Desk:</strong> +91 94900 87221<br />
+          • <strong>Official Email:</strong> sriyesaswitraders@gmail.com<br />
+          • <strong>HQ:</strong> 24-3-88/1, Thotavari Street, Narsipatnam, Anakapalli, AP - 531116, India<br />
+          • <strong>Social:</strong> Twitter & Instagram @yesaswitraders
+        `;
+      }
+
+      // Quote / Price Lock / Order
+      if (q.includes('price') || q.includes('quote') || q.includes('cost') || q.includes('rate') || q.includes('moq') || q.includes('export') || q.includes('fob') || q.includes('cif')) {
+        return `
+          <strong>📋 Price Lock & Consignment Terms:</strong><br />
+          • <strong>Incoterms:</strong> FOB Indian Ports (Vizag, Chennai, Mumbai) or CIF Global Destination Ports<br />
+          • <strong>Price Lock Guarantee:</strong> Rates locked for 48 hours upon quotation issue<br />
+          • <strong>Quality Inspection:</strong> SGS / Geo-Chem pre-shipment certificates available<br /><br />
+          <button class="chat-chip" onclick="navigateTo('contact')">👉 Jump to Trade Desk RFQ Form</button>
+        `;
+      }
+
+      // Default Friendly Bot Response
+      return `
+        Thank you for reaching out! Sri Yesaswi Traders specializes in direct bulk supply of <strong>Rajma Seeds, Finger Turmeric, Premium Black Pepper, Raw Green Coffee Seeds, and Dried Ginger</strong>.<br /><br />
+        Please choose a quick topic below or submit your requirements on our <a href="javascript:void(0)" onclick="navigateTo('contact')" style="color:var(--primary); font-weight:700;">Trade Desk Form</a>.
+      `;
+    }
+
+    // Initialize Lucide icons on load
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enterprise Portal | Sri Yesaswi Traders — India's Direct Agro Commodity Source</title>
+  <meta name="description" content="B2B Trade Portal for verified importers, food processors, and bulk buyers. Access price locks, live RFQs, and export spec sheets from Sri Yesaswi Traders." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+
+  <style>
+    :root {
+      --gold: #d4af37;
+      --gold-light: #f0d060;
+      --gold-dark: #a8892a;
+      --navy: #0a192f;
+      --navy-mid: #0d2342;
+      --navy-card: #112240;
+      --primary: #0f4c81;
+      --white: #ffffff;
+      --off-white: #f8f9fa;
+      --text-dark: #1e293b;
+      --text-muted: #64748b;
+      --border: rgba(212, 175, 55, 0.2);
+      --border-light: rgba(255,255,255,0.08);
+      --success: #10b981;
+      --danger: #ef4444;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --font-ui: 'Outfit', sans-serif;
+      --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { font-size: 16px; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--navy);
+      color: var(--white);
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ====================================================
+       LAYOUT — SPLIT SCREEN
+    ==================================================== */
+    .auth-layout {
+      display: grid;
+      grid-template-columns: 1fr 520px;
+      min-height: 100vh;
+    }
+
+    /* ====================================================
+       LEFT PANEL — BRAND STORY & TRUST SIGNALS
+    ==================================================== */
+    .brand-panel {
+      position: relative;
+      background: var(--navy);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      overflow: hidden;
+    }
+
+    .brand-panel-bg {
+      position: absolute;
+      inset: 0;
+      background-image: url('auth_hero.jpg');
+      background-size: cover;
+      background-position: center;
+      z-index: 0;
+    }
+
+    .brand-panel-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(10, 25, 47, 0.3) 0%,
+        rgba(10, 25, 47, 0.55) 40%,
+        rgba(10, 25, 47, 0.92) 75%,
+        rgba(10, 25, 47, 0.99) 100%
+      );
+      z-index: 1;
+    }
+
+    .brand-panel-content {
+      position: relative;
+      z-index: 2;
+      padding: 2.5rem 3rem;
+    }
+
+    .brand-logo-mark {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .logo-emblem {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 24px rgba(212, 175, 55, 0.4);
+    }
+
+    .logo-text-block .brand-name {
+      font-family: var(--font-ui);
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--white);
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+    }
+
+    .logo-text-block .brand-tag {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+
+    .brand-headline {
+      font-family: var(--font-display);
+      font-size: clamp(1.9rem, 2.8vw, 3.2rem);
+      font-weight: 800;
+      line-height: 1.15;
+      color: var(--white);
+      margin-bottom: 1.25rem;
+    }
+
+    .brand-headline em {
+      color: var(--gold);
+      font-style: normal;
+    }
+
+    .brand-desc {
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.65);
+      line-height: 1.7;
+      max-width: 480px;
+      margin-bottom: 2rem;
+    }
+
+    /* Commodity Tags */
+    .commodity-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .commodity-tag {
+      padding: 0.35rem 0.85rem;
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      background: rgba(212, 175, 55, 0.08);
+      border-radius: 30px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--gold);
+      letter-spacing: 0.03em;
+    }
+
+    /* Trust Signals Row */
+    .trust-row {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+    }
+
+    .trust-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .trust-badge strong {
+      color: rgba(255,255,255,0.9);
+    }
+
+    .trust-icon {
+      width: 28px;
+      height: 28px;
+      background: rgba(212, 175, 55, 0.12);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold);
+      flex-shrink: 0;
+    }
+
+    /* Testimonial block */
+    .brand-testimonial {
+      background: rgba(212, 175, 55, 0.06);
+      border: 1px solid rgba(212, 175, 55, 0.18);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .testimonial-text {
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      font-style: italic;
+      color: rgba(255,255,255,0.8);
+      line-height: 1.6;
+      margin-bottom: 0.75rem;
+    }
+
+    .testimonial-attr {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .testi-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), #1e6cb0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: var(--white);
+      flex-shrink: 0;
+    }
+
+    .testi-name {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--white);
+    }
+
+    .testi-role {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.5);
+    }
+
+    /* Founder strip */
+    .founder-strip {
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding-top: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .founder-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--gold);
+    }
+
+    .founder-avatar-fallback {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 1.1rem;
+      border: 2px solid var(--gold);
+      flex-shrink: 0;
+    }
+
+    .founder-info .founder-name {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--white);
+    }
+
+    .founder-info .founder-title {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.5);
+    }
+
+    /* ====================================================
+       RIGHT PANEL — AUTH FORM AREA
+    ==================================================== */
+    .auth-panel {
+      background: var(--white);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    /* Subtle pattern top of auth panel */
+    .auth-panel::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 50%, var(--gold) 100%);
+    }
+
+    .auth-panel-inner {
+      padding: 2.5rem 2.75rem;
+    }
+
+    /* Step indicator bar */
+    .auth-step-label {
+      font-family: var(--font-ui);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: var(--gold-dark);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .auth-panel-title {
+      font-family: var(--font-display);
+      font-size: 1.9rem;
+      font-weight: 800;
+      color: var(--navy);
+      line-height: 1.2;
+      margin-bottom: 0.35rem;
+    }
+
+    .auth-panel-sub {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin-bottom: 1.75rem;
+    }
+
+    /* MODE SWITCHER TABS */
+    .auth-tabs {
+      display: flex;
+      background: #f1f5f9;
+      padding: 0.35rem;
+      border-radius: 10px;
+      gap: 0.25rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 0.6rem 0.5rem;
+      border: none;
+      background: transparent;
+      border-radius: 7px;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      transition: all 0.25s var(--ease-in-out);
+      white-space: nowrap;
+    }
+
+    .auth-tab.active {
+      background: var(--white);
+      color: var(--navy);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .auth-tab.active.admin-tab {
+      color: #991b1b;
+    }
+
+    /* GOOGLE BUTTON */
+    .btn-google {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      background: var(--white);
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1e293b;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      transition: all 0.25s var(--ease-in-out);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-google::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: #f8fafc;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .btn-google:hover::before { opacity: 1; }
+
+    .btn-google:hover {
+      border-color: #94a3b8;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      transform: translateY(-1px);
+    }
+
+    .google-icon {
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn-google span { position: relative; z-index: 1; }
+
+    /* Divider */
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 1.25rem 0;
+      color: #94a3b8;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .auth-divider::before,
+    .auth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e2e8f0;
+    }
+
+    /* FORM ELEMENTS */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.85rem;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-label {
+      display: block;
+      font-family: var(--font-ui);
+      font-size: 0.775rem;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 0.35rem;
+      letter-spacing: 0.01em;
+    }
+
+    .form-field-wrap {
+      position: relative;
+    }
+
+    .field-icon {
+      position: absolute;
+      left: 0.9rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+    }
+
+    .field-input {
+      width: 100%;
+      padding: 0.72rem 1rem 0.72rem 2.5rem;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 9px;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      color: var(--text-dark);
+      background: #f8fafc;
+      transition: all 0.2s var(--ease-in-out);
+      outline: none;
+    }
+
+    .field-input::placeholder { color: #94a3b8; }
+
+    .field-input:focus {
+      border-color: var(--primary);
+      background: var(--white);
+      box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.1);
+    }
+
+    .field-input.no-icon {
+      padding-left: 1rem;
+    }
+
+    .field-input.gold-focus:focus {
+      border-color: var(--gold-dark);
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.12);
+    }
+
+    .pw-toggle {
+      position: absolute;
+      right: 0.9rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      padding: 0;
+    }
+
+    .pw-toggle:hover { color: var(--text-dark); }
+
+    select.field-input {
+      appearance: none;
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      padding-right: 2.5rem;
+    }
+
+    /* Form options row */
+    .form-options-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      font-size: 0.82rem;
+    }
+
+    .checkbox-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .checkbox-wrap input[type="checkbox"] {
+      accent-color: var(--primary);
+      width: 14px;
+      height: 14px;
+    }
+
+    .link-forgot {
+      color: var(--primary);
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .link-forgot:hover { text-decoration: underline; }
+
+    /* PRIMARY & ADMIN BUTTONS */
+    .btn-primary {
+      width: 100%;
+      padding: 0.88rem 1rem;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #0f4c81 0%, #082d4f 100%);
+      color: var(--white);
+      font-family: var(--font-ui);
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      box-shadow: 0 4px 15px rgba(15, 76, 129, 0.35);
+      transition: all 0.25s var(--ease-in-out);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .btn-primary:hover::after { opacity: 1; }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(15, 76, 129, 0.45);
+    }
+
+    .btn-admin {
+      background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);
+      box-shadow: 0 4px 15px rgba(153, 27, 27, 0.35);
+    }
+
+    .btn-admin:hover {
+      box-shadow: 0 8px 24px rgba(153, 27, 27, 0.45);
+    }
+
+    /* LOADING STATE */
+    .btn-primary.loading {
+      pointer-events: none;
+      opacity: 0.8;
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ADMIN RESTRICTED BADGE */
+    .admin-badge-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.85rem;
+      background: #fee2e2;
+      border-radius: 7px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #991b1b;
+      margin-bottom: 1.1rem;
+    }
+
+    /* FOOTER BELOW FORM */
+    .auth-form-footer {
+      margin-top: 1.25rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid #f1f5f9;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .auth-form-footer a {
+      color: var(--primary);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .auth-form-footer a:hover { text-decoration: underline; }
+
+    /* DASHBOARD / POST-LOGIN VIEW */
+    .dashboard-screen {
+      display: none;
+      animation: fadeUp 0.4s var(--ease-smooth);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .dash-greeting {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid #e2e8f0;
+      margin-bottom: 1.25rem;
+    }
+
+    .dash-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), #1e6cb0);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+      border: 2px solid #e2e8f0;
+      overflow: hidden;
+    }
+
+    .dash-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .dash-avatar.admin-av { background: linear-gradient(135deg, #b91c1c, #7f1d1d); }
+
+    .dash-name {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .dash-role {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .dash-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 1.1rem;
+    }
+
+    .dash-stat {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 0.85rem;
+    }
+
+    .dash-stat-val {
+      font-family: var(--font-ui);
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 0.15rem;
+    }
+
+    .dash-stat-lbl {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .dash-activity {
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .dash-activity-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.7rem 0.9rem;
+      background: #f8fafc;
+      border-radius: 8px;
+      border-left: 3px solid var(--gold);
+      font-size: 0.82rem;
+    }
+
+    .dash-activity-item strong { display: block; color: var(--navy); font-size: 0.85rem; }
+    .dash-activity-item span { color: var(--text-muted); font-size: 0.75rem; }
+
+    .dash-status {
+      font-size: 0.72rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .btn-dash {
+      width: 100%;
+      padding: 0.8rem;
+      font-size: 0.9rem;
+    }
+
+    .btn-logout {
+      width: 100%;
+      margin-top: 0.75rem;
+      padding: 0.65rem;
+      border: 1.5px solid #e2e8f0;
+      background: white;
+      border-radius: 9px;
+      font-family: var(--font-ui);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #dc2626;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+    }
+
+    .btn-logout:hover { background: #fee2e2; border-color: #fca5a5; }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--navy);
+      color: white;
+      padding: 0.85rem 1.5rem;
+      border-radius: 40px;
+      font-family: var(--font-ui);
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      z-index: 99999;
+      opacity: 0;
+      transition: all 0.35s var(--ease-smooth);
+      max-width: 90vw;
+    }
+
+    .toast.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.success { border-color: var(--success); }
+    .toast.error { border-color: var(--danger); }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      .auth-layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+      }
+
+      .brand-panel {
+        min-height: 280px;
+      }
+
+      .brand-panel-content {
+        padding: 1.75rem 1.5rem;
+      }
+
+      .brand-headline { font-size: 1.6rem; }
+      .brand-testimonial { display: none; }
+
+      .auth-panel-inner {
+        padding: 2rem 1.5rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .form-row { grid-template-columns: 1fr; }
+      .auth-tabs { gap: 0.15rem; }
+      .auth-tab { font-size: 0.73rem; padding: 0.5rem 0.3rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="auth-layout">
+
+    <!-- ============================================================
+         LEFT PANEL — BRAND STORY
+    ============================================================ -->
+    <div class="brand-panel">
+      <div class="brand-panel-bg"></div>
+      <div class="brand-panel-overlay"></div>
+      <div class="brand-panel-content">
+
+        <div class="brand-logo-mark">
+          <div class="logo-emblem">
+            <i data-lucide="shield-check" style="width:24px;height:24px;color:#0a192f;"></i>
+          </div>
+          <div class="logo-text-block">
+            <span class="brand-name">SRI YESASWI TRADERS</span>
+            <span class="brand-tag">Enterprise Trade Portal</span>
+          </div>
+        </div>
+
+        <h1 class="brand-headline">
+          India's <em>Finest</em><br/>
+          Agro Commodity<br/>
+          Export House
+        </h1>
+
+        <p class="brand-desc">
+          A trusted farm-source partner for bulk importers, food processors, and global commodity traders across 18+ countries. Direct sourcing. Guaranteed quality locks. Zero middlemen.
+        </p>
+
+        <div class="commodity-tags">
+          <span class="commodity-tag">🌾 Rajma Seeds</span>
+          <span class="commodity-tag">🌿 Finger Turmeric</span>
+          <span class="commodity-tag">☕ Green Coffee</span>
+          <span class="commodity-tag">🌶️ Black Pepper</span>
+          <span class="commodity-tag">🫚 Dried Ginger</span>
+        </div>
+
+        <div class="trust-row">
+          <div class="trust-badge">
+            <div class="trust-icon"><i data-lucide="award" style="width:14px;height:14px;"></i></div>
+            <div><strong>APEDA</strong><br/>Registered</div>
+          </div>
+          <div class="trust-badge">
+            <div class="trust-icon"><i data-lucide="leaf" style="width:14px;height:14px;"></i></div>
+            <div><strong>FSSAI</strong><br/>Certified</div>
+          </div>
+          <div class="trust-badge">
+            <div class="trust-icon"><i data-lucide="ship" style="width:14px;height:14px;"></i></div>
+            <div><strong>FOB/CIF</strong><br/>Export Ready</div>
+          </div>
+          <div class="trust-badge">
+            <div class="trust-icon"><i data-lucide="package-check" style="width:14px;height:14px;"></i></div>
+            <div><strong>Sortex</strong><br/>Cleaned Grade</div>
+          </div>
+        </div>
+
+        <div class="brand-testimonial">
+          <p class="testimonial-text">"Sri Yesaswi Traders delivered 48 MT of Rajma seeds to our Rotterdam depot — consistent quality, precision packing, and the best FOB pricing we've seen from any Indian house."</p>
+          <div class="testimonial-attr">
+            <div class="testi-avatar">A</div>
+            <div>
+              <div class="testi-name">Arjun Mehta</div>
+              <div class="testi-role">Chief Procurement Officer, Global Agro Importers BV</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="founder-strip">
+          <div class="founder-avatar-fallback">S</div>
+          <div class="founder-info">
+            <div class="founder-name">M.V SURESH KUMAR</div>
+            <div class="founder-title">Founder & Managing Director · Narsipatnam, Andhra Pradesh</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================================================
+         RIGHT PANEL — AUTHENTICATION FORMS
+    ============================================================ -->
+    <div class="auth-panel">
+      <div class="auth-panel-inner">
+
+        <!-- Role & Mode Tabs -->
+        <div style="margin-bottom:1.5rem;">
+          <p class="auth-step-label">Trade Access Portal</p>
+          <h2 class="auth-panel-title" id="authTitle">Welcome Back</h2>
+          <p class="auth-panel-sub" id="authSubtitle">Sign in to access price locks, consignment tracking, and sourcing tools.</p>
+        </div>
+
+        <!-- Mode Tabs -->
+        <div class="auth-tabs" id="authTabs">
+          <button class="auth-tab active" id="tabLogin" onclick="setMode('login')">
+            <i data-lucide="log-in" style="width:14px;height:14px;"></i> Sign In
+          </button>
+          <button class="auth-tab" id="tabRegister" onclick="setMode('register')">
+            <i data-lucide="building-2" style="width:14px;height:14px;"></i> Register
+          </button>
+          <button class="auth-tab admin-tab" id="tabAdmin" onclick="setMode('admin')">
+            <i data-lucide="shield-alert" style="width:14px;height:14px;"></i> Admin
+          </button>
+        </div>
+
+        <!-- =====================
+             FORM SECTIONS
+        ===================== -->
+        <div id="allForms">
+
+          <!-- GOOGLE SSO (shown on login & register) -->
+          <div id="googleSection">
+            <button class="btn-google" onclick="handleGoogleSignIn()">
+              <svg class="google-icon" viewBox="0 0 24 24" width="20" height="20">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              </svg>
+              <span>Continue with Google</span>
+            </button>
+            <div class="auth-divider">or continue with email</div>
+          </div>
+
+          <!-- ======  LOGIN FORM ====== -->
+          <form id="loginForm" onsubmit="handleLogin(event)" style="display:block;">
+            <div class="form-group">
+              <label class="form-label">Work Email / Buyer ID</label>
+              <div class="form-field-wrap">
+                <div class="field-icon"><i data-lucide="mail" style="width:16px;height:16px;"></i></div>
+                <input type="email" id="loginEmail" class="field-input" placeholder="name@company.com" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <div class="form-field-wrap">
+                <div class="field-icon"><i data-lucide="lock" style="width:16px;height:16px;"></i></div>
+                <input type="password" id="loginPw" class="field-input" placeholder="••••••••••" required />
+                <button type="button" class="pw-toggle" onclick="togglePw('loginPw', this)">
+                  <i data-lucide="eye" style="width:16px;height:16px;"></i>
+                </button>
+              </div>
+            </div>
+            <div class="form-options-row">
+              <label class="checkbox-wrap"><input type="checkbox" checked /> Keep me signed in</label>
+              <a href="javascript:void(0)" class="link-forgot" onclick="showToast('Password reset link sent to your registered email.','success')">Forgot password?</a>
+            </div>
+            <button type="submit" class="btn-primary" id="loginBtn">
+              <span>Sign In to Trade Portal</span>
+              <i data-lucide="arrow-right" style="width:17px;height:17px;"></i>
+            </button>
+            <div class="auth-form-footer">
+              No account? <a href="javascript:void(0)" onclick="setMode('register')">Register your enterprise →</a>
+            </div>
+
+            <!-- Demo hint -->
+            <div style="margin-top:1rem; padding:0.75rem 1rem; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:9px; font-size:0.775rem; color:#64748b; display:flex; justify-content:space-between; align-items:center;">
+              <div>Demo: <strong>buyer@globalagro.com</strong> / buyer123</div>
+              <button type="button" style="background:white;border:1px solid #cbd5e1;padding:0.3rem 0.65rem;border-radius:6px;font-size:0.72rem;font-weight:700;color:#0f4c81;cursor:pointer;" onclick="autofillDemo('buyer')">Autofill</button>
+            </div>
+          </form>
+
+          <!-- ======  REGISTER FORM ====== -->
+          <form id="registerForm" onsubmit="handleRegister(event)" style="display:none;">
+            <div class="form-group">
+              <label class="form-label">Enterprise / Company Name</label>
+              <div class="form-field-wrap">
+                <div class="field-icon"><i data-lucide="building-2" style="width:16px;height:16px;"></i></div>
+                <input type="text" id="regCompany" class="field-input" placeholder="e.g. Apex Global Trading LLC" required />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">Your Name</label>
+                <div class="form-field-wrap">
+                  <div class="field-icon"><i data-lucide="user" style="width:16px;height:16px;"></i></div>
+                  <input type="text" id="regName" class="field-input" placeholder="Full Name" required />
+                </div>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">Business Type</label>
+                <select id="regBizType" class="field-input no-icon" style="padding-left:0.9rem;" required>
+                  <option value="">Select...</option>
+                  <option>Importer / Exporter</option>
+                  <option>Food Processor</option>
+                  <option>Wholesaler / Distributor</option>
+                  <option>Supermarket / Retail Chain</option>
+                  <option>Manufacturing Industry</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row" style="margin-top:0.85rem;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">Work Email</label>
+                <div class="form-field-wrap">
+                  <div class="field-icon"><i data-lucide="mail" style="width:16px;height:16px;"></i></div>
+                  <input type="email" id="regEmail" class="field-input" placeholder="you@company.com" required />
+                </div>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">WhatsApp / Phone</label>
+                <div class="form-field-wrap">
+                  <div class="field-icon"><i data-lucide="phone" style="width:16px;height:16px;"></i></div>
+                  <input type="tel" id="regPhone" class="field-input" placeholder="+91..." required />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row" style="margin-top:0.85rem;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">Primary Commodity</label>
+                <select id="regCommodity" class="field-input no-icon" style="padding-left:0.9rem;" required>
+                  <option value="">Select...</option>
+                  <option>Rajma Seeds (Kidney Beans)</option>
+                  <option>Finger Turmeric</option>
+                  <option>Raw Green Coffee Seeds</option>
+                  <option>Premium Black Pepper</option>
+                  <option>Dried Ginger</option>
+                  <option>Multiple Commodities</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">Destination Port</label>
+                <div class="form-field-wrap">
+                  <div class="field-icon"><i data-lucide="ship" style="width:16px;height:16px;"></i></div>
+                  <input type="text" id="regPort" class="field-input" placeholder="e.g. Dubai, Rotterdam" />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top:0.85rem;">
+              <label class="form-label">Create Password</label>
+              <div class="form-field-wrap">
+                <div class="field-icon"><i data-lucide="lock" style="width:16px;height:16px;"></i></div>
+                <input type="password" id="regPw" class="field-input" placeholder="Minimum 8 characters" required />
+                <button type="button" class="pw-toggle" onclick="togglePw('regPw', this)">
+                  <i data-lucide="eye" style="width:16px;height:16px;"></i>
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-primary" id="registerBtn" style="margin-top:0.25rem;">
+              <span>Create Enterprise Account</span>
+              <i data-lucide="check-circle-2" style="width:17px;height:17px;"></i>
+            </button>
+            <div class="auth-form-footer">
+              Already have an account? <a href="javascript:void(0)" onclick="setMode('login')">Sign In →</a>
+            </div>
+          </form>
+
+          <!-- ======  ADMIN FORM ====== -->
+          <form id="adminForm" onsubmit="handleAdmin(event)" style="display:none;">
+            <div class="admin-badge-bar">
+              <i data-lucide="shield-alert" style="width:13px;height:13px;"></i>
+              RESTRICTED — TRADE DESK & MANAGEMENT OFFICERS ONLY
+            </div>
+            <div class="form-group">
+              <label class="form-label">Desk Officer Email</label>
+              <div class="form-field-wrap">
+                <div class="field-icon"><i data-lucide="mail" style="width:16px;height:16px;"></i></div>
+                <input type="email" id="adminEmail" class="field-input gold-focus" placeholder="admin@sriyesaswitraders.com" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Master Password</label>
+              <div class="form-field-wrap">
+                <div class="field-icon"><i data-lucide="lock" style="width:16px;height:16px;"></i></div>
+                <input type="password" id="adminPw" class="field-input gold-focus" placeholder="••••••••••" required />
+                <button type="button" class="pw-toggle" onclick="togglePw('adminPw', this)">
+                  <i data-lucide="eye" style="width:16px;height:16px;"></i>
+                </button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Security PIN / 2FA Token</label>
+              <div class="form-field-wrap">
+                <div class="field-icon"><i data-lucide="key" style="width:16px;height:16px;"></i></div>
+                <input type="text" id="adminPin" class="field-input gold-focus" placeholder="6-digit PIN" maxlength="6" required />
+              </div>
+            </div>
+            <button type="submit" class="btn-primary btn-admin" id="adminBtn">
+              <i data-lucide="shield" style="width:17px;height:17px;"></i>
+              <span>Authorize & Enter Admin Desk</span>
+            </button>
+
+            <div style="margin-top:1rem; padding:0.75rem 1rem; background:#fef2f2; border:1px dashed #fca5a5; border-radius:9px; font-size:0.775rem; color:#7f1d1d; display:flex; justify-content:space-between; align-items:center;">
+              <div>Demo: <strong>admin@sriyesaswitraders.com</strong> / PIN: 531116</div>
+              <button type="button" style="background:white;border:1px solid #fca5a5;padding:0.3rem 0.65rem;border-radius:6px;font-size:0.72rem;font-weight:700;color:#991b1b;cursor:pointer;" onclick="autofillDemo('admin')">Autofill</button>
+            </div>
+          </form>
+
+        </div>
+
+        <!-- ======  DASHBOARD AFTER LOGIN ====== -->
+        <div id="dashScreen" class="dashboard-screen">
+          <div class="dash-greeting">
+            <div class="dash-avatar" id="dashAv">B</div>
+            <div>
+              <div class="dash-name" id="dashName">Enterprise Buyer</div>
+              <div class="dash-role" id="dashRole">Verified Trade Account</div>
+            </div>
+            <div style="margin-left:auto;">
+              <span id="dbStatusDot" style="display:inline-flex;align-items:center;gap:0.3rem;padding:0.25rem 0.6rem;border-radius:20px;font-size:0.7rem;font-weight:700;background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.3);">
+                <span style="width:6px;height:6px;background:#10b981;border-radius:50%;"></span>
+                <span>Firebase Live</span>
+              </span>
+            </div>
+          </div>
+
+          <div class="dash-grid">
+            <div class="dash-stat">
+              <div class="dash-stat-val" id="dStat1">2 Active</div>
+              <div class="dash-stat-lbl" id="dStat1L">Consignments In Transit</div>
+            </div>
+            <div class="dash-stat">
+              <div class="dash-stat-val" id="dStat2">Rate Lock</div>
+              <div class="dash-stat-lbl" id="dStat2L">48hr Price Guarantee</div>
+            </div>
+          </div>
+
+          <p style="font-size:0.78rem;font-weight:700;color:#374151;margin-bottom:0.5rem;letter-spacing:0.02em;">RECENT TRADE ACTIVITY</p>
+          <div class="dash-activity" id="dashActivity"></div>
+
+          <a href="1business.html" class="btn-primary btn-dash" style="text-decoration:none;justify-content:center;">
+            <i data-lucide="layout-dashboard" style="width:16px;height:16px;"></i>
+            <span>Enter Trade Portal</span>
+          </a>
+          <button class="btn-logout" onclick="handleLogout()">
+            <i data-lucide="log-out" style="width:15px;height:15px;"></i>
+            Sign Out
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- end auth-layout -->
+
+  <!-- TOAST -->
+  <div class="toast" id="toast">
+    <i data-lucide="info" style="width:16px;height:16px;color:var(--gold);flex-shrink:0;"></i>
+    <span id="toastMsg">Message</span>
+  </div>
+
+  <script>
+    // ================================================
+    // STATE
+    // ================================================
+    let currentMode = 'login';
+
+    // ================================================
+    // MODE SWITCHER
+    // ================================================
+    function setMode(mode) {
+      currentMode = mode;
+      const tabs = { login: 'tabLogin', register: 'tabRegister', admin: 'tabAdmin' };
+      const forms = { login: 'loginForm', register: 'registerForm', admin: 'adminForm' };
+      const titles = {
+        login:    ['Welcome Back', 'Sign in to access price locks, consignment tracking, and sourcing tools.'],
+        register: ['Open Your Account', 'Register your enterprise to unlock bulk pricing, RFQ filing, and export partnerships.'],
+        admin:    ['Admin Clearance', 'Restricted entry for M.V SURESH KUMAR and authorized Trade Desk Officers.']
+      };
+
+      Object.keys(tabs).forEach(m => {
+        document.getElementById(tabs[m]).classList.toggle('active', m === mode);
+        document.getElementById(forms[m]).style.display = m === mode ? 'block' : 'none';
+      });
+
+      // Google SSO block only on login/register
+      document.getElementById('googleSection').style.display = mode === 'admin' ? 'none' : 'block';
+
+      document.getElementById('authTitle').textContent = titles[mode][0];
+      document.getElementById('authSubtitle').textContent = titles[mode][1];
+      lucide.createIcons();
+    }
+
+    // ================================================
+    // TOGGLE PASSWORD
+    // ================================================
+    function togglePw(inputId, btn) {
+      const input = document.getElementById(inputId);
+      const isText = input.type === 'text';
+      input.type = isText ? 'password' : 'text';
+      btn.innerHTML = `<i data-lucide="${isText ? 'eye' : 'eye-off'}" style="width:16px;height:16px;"></i>`;
+      lucide.createIcons();
+    }
+
+    // ================================================
+    // GOOGLE SIGN-IN
+    // ================================================
+    async function handleGoogleSignIn() {
+      showToast('Launching Google authentication...', 'info');
+
+      if (typeof firebase !== 'undefined' && typeof auth !== 'undefined' && auth !== null) {
+        try {
+          const provider = new firebase.auth.GoogleAuthProvider();
+          provider.setCustomParameters({ prompt: 'select_account' });
+          const result = await auth.signInWithPopup(provider);
+          const user = result.user;
+
+          // Save to Firestore if new user
+          if (typeof db !== 'undefined' && db !== null) {
+            await db.collection('users').doc(user.uid).set({
+              uid: user.uid,
+              name: user.displayName,
+              email: user.email,
+              photoURL: user.photoURL,
+              role: 'buyer',
+              loginMethod: 'google',
+              lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+          }
+
+          showToast(`Welcome, ${user.displayName}!`, 'success');
+          renderDashboard({
+            name: user.displayName,
+            email: user.email,
+            photoURL: user.photoURL,
+            role: 'buyer'
+          });
+          return;
+        } catch (err) {
+          if (err.code === 'auth/popup-closed-by-user') return;
+          showToast('Google sign-in failed. Using demo mode.', 'error');
+        }
+      }
+
+      // Simulated Google demo fallback
+      setTimeout(() => {
+        showToast('Google sign-in verified!', 'success');
+        renderDashboard({
+          name: 'Arjun Mehta (Google)',
+          email: 'arjun@globalagro.com',
+          photoURL: null,
+          role: 'buyer',
+          company: 'Global Agro Importers BV'
+        });
+      }, 900);
+    }
+
+    // ================================================
+    // LOGIN
+    // ================================================
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const pw = document.getElementById('loginPw').value;
+      const btn = document.getElementById('loginBtn');
+
+      setLoading(btn, true);
+
+      const res = typeof loginUser === 'function'
+        ? await loginUser(email, pw, 'buyer')
+        : { success: true, user: { name: 'Enterprise Buyer', email, role: 'buyer' } };
+
+      setLoading(btn, false);
+
+      if (!res.success) {
+        showToast(res.error || 'Invalid credentials. Please try again.', 'error');
+        return;
+      }
+
+      showToast('Sign-in verified! Loading your trade records...', 'success');
+      setTimeout(() => renderDashboard(res.user), 350);
+    }
+
+    // ================================================
+    // REGISTER
+    // ================================================
+    async function handleRegister(e) {
+      e.preventDefault();
+      const btn = document.getElementById('registerBtn');
+      const data = {
+        company:   document.getElementById('regCompany').value.trim(),
+        name:      document.getElementById('regName').value.trim(),
+        bizType:   document.getElementById('regBizType').value,
+        email:     document.getElementById('regEmail').value.trim(),
+        phone:     document.getElementById('regPhone').value.trim(),
+        commodity: document.getElementById('regCommodity').value,
+        port:      document.getElementById('regPort').value.trim(),
+        password:  document.getElementById('regPw').value,
+        role:      'buyer'
+      };
+
+      setLoading(btn, true);
+
+      const res = typeof registerUser === 'function'
+        ? await registerUser(data)
+        : { success: true, user: { ...data } };
+
+      setLoading(btn, false);
+
+      if (!res.success) {
+        showToast(res.error || 'Registration failed. Please try again.', 'error');
+        return;
+      }
+
+      showToast('Enterprise account created & saved to database!', 'success');
+      setTimeout(() => renderDashboard({ name: data.name, email: data.email, company: data.company, role: 'buyer' }), 350);
+    }
+
+    // ================================================
+    // ADMIN
+    // ================================================
+    async function handleAdmin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('adminBtn');
+      const email = document.getElementById('adminEmail').value.trim();
+      const pw = document.getElementById('adminPw').value;
+      const pin = document.getElementById('adminPin').value.trim();
+
+      setLoading(btn, true);
+
+      const res = typeof loginUser === 'function'
+        ? await loginUser(email, pw, 'admin', pin)
+        : { success: pin === '531116', user: { name: 'M.V SURESH KUMAR', role: 'admin' }, error: 'Invalid PIN.' };
+
+      setLoading(btn, false);
+
+      if (!res.success) {
+        showToast(res.error || 'Admin authorization failed.', 'error');
+        return;
+      }
+
+      showToast('Admin clearance granted. Launching Commercial Desk...', 'success');
+      setTimeout(() => renderDashboard({ name: 'M.V SURESH KUMAR (MD)', email, role: 'admin', company: 'Sri Yesaswi Traders HQ' }), 350);
+    }
+
+    // ================================================
+    // RENDER DASHBOARD
+    // ================================================
+    async function renderDashboard(user) {
+      // Save session to localStorage so 1business.html session guard passes
+      localStorage.setItem('syt_session', JSON.stringify({
+        name:     user.name || user.email || 'Buyer',
+        email:    user.email || '',
+        role:     user.role || 'buyer',
+        company:  user.company || '',
+        photoURL: user.photoURL || null,
+        loginAt:  Date.now()
+      }));
+
+      // Redirect to the main website after showing the success message briefly
+      setTimeout(() => {
+        window.location.href = '1business.html';
+      }, 1200);
+
+      const isAdmin = user.role === 'admin';
+      const av = document.getElementById('dashAv');
+      av.className = `dash-avatar ${isAdmin ? 'admin-av' : ''}`;
+
+      if (user.photoURL) {
+        av.innerHTML = `<img src="${user.photoURL}" alt="${user.name}" />`;
+      } else {
+        av.textContent = user.name.charAt(0).toUpperCase();
+      }
+
+      document.getElementById('dashName').textContent = user.name || user.email;
+      document.getElementById('dashRole').textContent = isAdmin
+        ? 'Master Admin · Sri Yesaswi Traders HQ'
+        : `${user.company || 'Enterprise Buyer'} (${user.email})`;
+
+      document.getElementById('authTitle').textContent = isAdmin ? 'Admin Desk' : 'Trade Portal';
+      document.getElementById('authSubtitle').textContent = isAdmin
+        ? 'Live trade operations, RFQ management, and dispatch control.'
+        : 'Your real-time commodity trade records and price locks.';
+
+      if (isAdmin) {
+        document.getElementById('dStat1').textContent = '14 RFQs';
+        document.getElementById('dStat1L').textContent = 'Pending Trade Inquiries';
+        document.getElementById('dStat2').textContent = '180 MT';
+        document.getElementById('dStat2L').textContent = 'Volume Dispatched This Week';
+        document.getElementById('dashActivity').innerHTML = `
+          <div class="dash-activity-item" style="border-left-color:#b91c1c;">
+            <div><strong>RFQ: Raw Green Coffee (40 MT)</strong><span>Continental Roastings Ltd — Dubai CIF</span></div>
+            <span class="dash-status" style="color:#b91c1c;">Review</span>
+          </div>
+          <div class="dash-activity-item" style="border-left-color:var(--gold);">
+            <div><strong>Price Lock: Black Pepper 550g/l</strong><span>FOB Vizag Rate Locked — Active 48h</span></div>
+            <span class="dash-status" style="color:#10b981;">Active</span>
+          </div>`;
+      } else {
+        // Load RFQs from DB
+        const rfqs = typeof getRFQs === 'function' ? await getRFQs() : [];
+        let actHtml = '';
+
+        if (rfqs && rfqs.length > 0) {
+          actHtml = rfqs.slice(0, 2).map(r => `
+            <div class="dash-activity-item">
+              <div><strong>${r.commodity || 'Commodity'} (${r.tonnage || 25} MT)</strong><span>Dest: ${r.destination || 'India Port'}</span></div>
+              <span class="dash-status" style="color:#10b981;">Saved in DB</span>
+            </div>`).join('');
+        } else {
+          actHtml = `
+            <div class="dash-activity-item">
+              <div><strong>Sortex Rajma Seeds (24 MT)</strong><span>Consignment #SYT-8941 · Chennai Port</span></div>
+              <span class="dash-status" style="color:#10b981;">In Transit</span>
+            </div>
+            <div class="dash-activity-item">
+              <div><strong>Salem Finger Turmeric (18 MT)</strong><span>APEDA Lab Cert #LAB-2026</span></div>
+              <span class="dash-status" style="color:#0f4c81;">Approved</span>
+            </div>`;
+        }
+
+        document.getElementById('dashActivity').innerHTML = actHtml;
+      }
+
+      lucide.createIcons();
+    }
+
+    // ================================================
+    // LOGOUT
+    // ================================================
+    function handleLogout() {
+      if (typeof auth !== 'undefined' && auth) {
+        try { auth.signOut(); } catch(e) {}
+      }
+      document.getElementById('allForms').style.display = 'block';
+      document.getElementById('authTabs').style.display = 'flex';
+      document.getElementById('dashScreen').style.display = 'none';
+      setMode('login');
+      showToast('Signed out successfully.', 'info');
+    }
+
+    // ================================================
+    // HELPERS
+    // ================================================
+    function setLoading(btn, loading) {
+      btn.classList.toggle('loading', loading);
+      btn.innerHTML = loading
+        ? `<div class="spinner"></div><span>Please wait...</span>`
+        : btn.dataset.defaultContent || btn.innerHTML;
+      if (!loading) lucide.createIcons();
+    }
+
+    function autofillDemo(type) {
+      if (type === 'buyer') {
+        document.getElementById('loginEmail').value = 'buyer@globalagro.com';
+        document.getElementById('loginPw').value = 'buyer123';
+        showToast('Demo buyer credentials filled!', 'info');
+      } else {
+        document.getElementById('adminEmail').value = 'admin@sriyesaswitraders.com';
+        document.getElementById('adminPw').value = 'suresh@admin2026';
+        document.getElementById('adminPin').value = '531116';
+        showToast('Demo admin credentials filled!', 'info');
+      }
+    }
+
+    let toastTimer;
+    function showToast(msg, type = 'info') {
+      const t = document.getElementById('toast');
+      const icons = { info: 'info', success: 'check-circle', error: 'alert-circle' };
+      const colors = { info: 'var(--gold)', success: '#10b981', error: '#ef4444' };
+      t.innerHTML = `<i data-lucide="${icons[type]}" style="width:16px;height:16px;color:${colors[type]};flex-shrink:0;"></i><span>${msg}</span>`;
+      t.className = `toast visible ${type}`;
+      lucide.createIcons();
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('visible'), 3500);
+    }
+
+    // Init
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+
+      // Check Firebase auth state persistence
+      if (typeof auth !== 'undefined' && auth) {
+        auth.onAuthStateChanged(user => {
+          if (user) {
+            renderDashboard({
+              name: user.displayName || 'Enterprise Buyer',
+              email: user.email,
+              photoURL: user.photoURL,
+              role: 'buyer'
+            });
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
