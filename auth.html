@@ -878,9 +878,128 @@
       .auth-tabs { gap: 0.15rem; }
       .auth-tab { font-size: 0.73rem; padding: 0.5rem 0.3rem; }
     }
+
+    /* =======================================================
+       Full-Screen Logo / Title Intro Video Animation Overlay
+       ======================================================= */
+    .intro-splash-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: #000000;
+      z-index: 999999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .intro-splash-overlay.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .intro-splash-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #000000;
+    }
+
+    .intro-logo-video {
+      width: 100%;
+      height: 100%;
+      max-width: 100vw;
+      max-height: 100vh;
+      object-fit: contain;
+      background-color: transparent;
+      outline: none;
+      border: none;
+      user-select: none;
+      -webkit-user-select: none;
+      pointer-events: none;
+    }
+
+    /* Subtle luxury skip button */
+    .skip-intro-btn {
+      position: absolute;
+      bottom: 28px;
+      right: 28px;
+      padding: 0.45rem 1rem;
+      background: rgba(15, 23, 42, 0.65);
+      color: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 30px;
+      font-family: var(--font-body, -apple-system, sans-serif);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      transition: all 0.25s ease;
+      z-index: 10;
+      opacity: 0.8;
+    }
+
+    .skip-intro-btn:hover {
+      opacity: 1;
+      background: rgba(212, 175, 55, 0.2);
+      border-color: #d4af37;
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 768px) {
+      .skip-intro-btn {
+        bottom: 20px;
+        right: 20px;
+        font-size: 0.75rem;
+        padding: 0.4rem 0.85rem;
+      }
+    }
   </style>
 </head>
 <body>
+
+  <!-- Full-Screen Logo/Title Intro Video Animation Overlay -->
+  <div id="introSplashOverlay" class="intro-splash-overlay">
+    <div class="intro-splash-container">
+      <video
+        id="introLogoVideo"
+        class="intro-logo-video"
+        src="logo.mp4"
+        autoplay
+        muted
+        playsinline
+        preload="auto"
+        controlslist="nodownload nofullscreen noremoteplayback"
+        disablepictureinpicture
+        oncontextmenu="return false;"
+      ></video>
+      <button id="skipIntroBtn" class="skip-intro-btn" onclick="dismissIntroSplash()" title="Skip Intro">
+        <span>Skip</span>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="13 17 18 12 13 7"></polyline>
+          <polyline points="6 17 11 12 6 7"></polyline>
+        </svg>
+      </button>
+    </div>
+  </div>
 
   <div class="auth-layout">
 
@@ -1544,9 +1663,63 @@
       toastTimer = setTimeout(() => t.classList.remove('visible'), 3500);
     }
 
+    // ── Full-Screen Logo/Title Intro Video Animation ───────────────
+    let introFinished = false;
+
+    function dismissIntroSplash() {
+      if (introFinished) return;
+      introFinished = true;
+
+      const overlay = document.getElementById('introSplashOverlay');
+      const video = document.getElementById('introLogoVideo');
+
+      if (overlay) {
+        overlay.classList.add('is-hidden');
+        // Stop video playback and cleanup after transition completes
+        setTimeout(() => {
+          if (video) {
+            try {
+              video.pause();
+              video.src = '';
+              video.load();
+            } catch (e) {}
+          }
+          if (overlay && overlay.parentNode) {
+            overlay.parentNode.removeChild(overlay);
+          }
+        }, 900);
+      }
+    }
+
     // Init
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
+
+      const video = document.getElementById('introLogoVideo');
+      if (video) {
+        // 1. When video naturally finishes playing (once)
+        video.addEventListener('ended', dismissIntroSplash);
+
+        // 2. Autoplay trigger with muted fallback guarantee
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(err => {
+            console.warn('Autoplay requires muted state:', err);
+            video.muted = true;
+            video.play().catch(e => {
+              console.warn('Video failed to play, dismissing splash overlay:', e);
+              dismissIntroSplash();
+            });
+          });
+        }
+
+        // 3. Fallback safety timer (11.5s for 10s video) in case video event fails
+        setTimeout(() => {
+          if (!introFinished) {
+            dismissIntroSplash();
+          }
+        }, 11500);
+      }
 
       // Check Firebase auth state persistence
       if (typeof auth !== 'undefined' && auth) {
