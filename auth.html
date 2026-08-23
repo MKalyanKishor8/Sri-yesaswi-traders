@@ -991,12 +991,12 @@
     </div>
 
     <div class="hud-controls-group">
-      <button class="hud-control-btn" id="audioBtn" onclick="toggleAudio()" title="Toggle Video Sound">
-        <i data-lucide="volume-x" id="audioIcon" style="width:15px;height:15px;"></i>
-        <span id="audioLabel">Sound</span>
+      <button class="hud-control-btn active" id="audioBtn" onclick="toggleAudio(event)" title="Toggle Video Sound">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
+        <span id="audioLabel">Sound On</span>
       </button>
 
-      <button class="hud-control-btn" onclick="replayIntroTheater()" title="Replay Full-Screen Logo Animation">
+      <button class="hud-control-btn" onclick="replayIntroTheater(event)" title="Replay Full-Screen Logo Animation">
         <i data-lucide="play" style="width:15px;height:15px;color:var(--gold);"></i>
         <span>Replay Intro</span>
       </button>
@@ -1023,14 +1023,14 @@
     </video>
 
     <!-- Floating Audio Toggle Button inside Theater -->
-    <button class="theater-audio-btn" id="theaterAudioBtn" onclick="event.stopPropagation(); toggleAudio()" title="Toggle Video Sound">
-      <i data-lucide="volume-2" id="theaterAudioIcon" style="width:16px;height:16px;"></i>
+    <button class="theater-audio-btn active" id="theaterAudioBtn" onclick="toggleAudio(event)" title="Toggle Video Sound">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
       <span id="theaterAudioText">Sound On</span>
     </button>
 
     <!-- Unmute prompt banner if browser blocks autoplay audio -->
-    <div id="unmutePrompt" class="theater-unmute-prompt" onclick="event.stopPropagation(); unmuteAudioNow()">
-      <i data-lucide="volume-2" style="width:18px;height:18px;"></i>
+    <div id="unmutePrompt" class="theater-unmute-prompt" onclick="event.stopPropagation(); forceUnmute()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
       <span>Tap anywhere for Sound 🔊</span>
     </div>
 
@@ -1047,7 +1047,7 @@
     <div class="portal-master-card">
 
       <!-- Integrated logo1.mp4 Video Animation Banner -->
-      <div class="card-video-hero" onclick="toggleAudio()" title="Click to Toggle Sound">
+      <div class="card-video-hero" onclick="toggleAudio(event)" title="Click to Toggle Sound">
         <video
           id="cardLogoVideo"
           class="card-video-element"
@@ -1064,8 +1064,8 @@
           <source src="logo.mp4" type="video/mp4" />
         </video>
         <div class="card-video-overlay"></div>
-        <div class="card-video-replay-badge" onclick="event.stopPropagation(); toggleAudio()" title="Toggle Video Audio">
-          <i data-lucide="volume-2" id="cardSoundIcon" style="width:12px;height:12px;color:var(--gold);"></i>
+        <div class="card-video-replay-badge" id="cardSoundBadge" onclick="toggleAudio(event)" title="Toggle Video Audio">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--gold);"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
           <span id="cardSoundText">Audio On</span>
         </div>
       </div>
@@ -1486,39 +1486,34 @@
       return audioCtx;
     }
 
+    const VOLUME_ON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>`;
+    const VOLUME_OFF_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="22" x2="16" y1="9" y2="15"></line><line x1="16" x2="22" y1="9" y2="15"></line></svg>`;
+
     function updateAudioHud(active) {
       isAudioOn = active;
-      const icon = document.getElementById('audioIcon');
-      const label = document.getElementById('audioLabel');
+      
       const btn = document.getElementById('audioBtn');
-      const theaterBtn = document.getElementById('theaterAudioBtn');
-      const theaterIcon = document.getElementById('theaterAudioIcon');
-      const theaterLabel = document.getElementById('theaterAudioText');
-      const cardSoundIcon = document.getElementById('cardSoundIcon');
-      const cardSoundText = document.getElementById('cardSoundText');
-      const prompt = document.getElementById('unmutePrompt');
-
-      if (active) {
-        if (btn) btn.classList.add('active');
-        if (icon) icon.setAttribute('data-lucide', 'volume-2');
-        if (label) label.textContent = 'Audio On';
-        if (theaterBtn) theaterBtn.classList.add('active');
-        if (theaterIcon) theaterIcon.setAttribute('data-lucide', 'volume-2');
-        if (theaterLabel) theaterLabel.textContent = 'Sound On';
-        if (cardSoundIcon) cardSoundIcon.setAttribute('data-lucide', 'volume-2');
-        if (cardSoundText) cardSoundText.textContent = 'Audio On';
-        if (prompt) prompt.classList.remove('visible');
-      } else {
-        if (btn) btn.classList.remove('active');
-        if (icon) icon.setAttribute('data-lucide', 'volume-x');
-        if (label) label.textContent = 'Sound Off';
-        if (theaterBtn) theaterBtn.classList.remove('active');
-        if (theaterIcon) theaterIcon.setAttribute('data-lucide', 'volume-x');
-        if (theaterLabel) theaterLabel.textContent = 'Muted';
-        if (cardSoundIcon) cardSoundIcon.setAttribute('data-lucide', 'volume-x');
-        if (cardSoundText) cardSoundText.textContent = 'Muted';
+      if (btn) {
+        btn.className = active ? 'hud-control-btn active' : 'hud-control-btn';
+        btn.innerHTML = `${active ? VOLUME_ON_SVG : VOLUME_OFF_SVG} <span>${active ? 'Sound On' : 'Sound Off'}</span>`;
       }
-      lucide.createIcons();
+
+      const theaterBtn = document.getElementById('theaterAudioBtn');
+      if (theaterBtn) {
+        theaterBtn.className = active ? 'theater-audio-btn active' : 'theater-audio-btn';
+        theaterBtn.innerHTML = `${active ? VOLUME_ON_SVG : VOLUME_OFF_SVG} <span>${active ? 'Sound On' : 'Muted'}</span>`;
+      }
+
+      const cardBadge = document.getElementById('cardSoundBadge');
+      if (cardBadge) {
+        cardBadge.innerHTML = `${active ? VOLUME_ON_SVG : VOLUME_OFF_SVG} <span>${active ? 'Audio On' : 'Muted'}</span>`;
+        cardBadge.style.color = active ? 'var(--gold-light)' : 'var(--text-muted)';
+      }
+
+      const prompt = document.getElementById('unmutePrompt');
+      if (prompt) {
+        if (active) prompt.classList.remove('visible');
+      }
     }
 
     function forceUnmute() {
@@ -1556,19 +1551,21 @@
 
       // Ensure card logo video continues playing in loop
       if (cardVid) {
-        cardVid.muted = true;
+        cardVid.muted = !isAudioOn;
+        cardVid.volume = isAudioOn ? 1.0 : 0.0;
         cardVid.play().catch(e => console.warn('Card video play:', e));
       }
     }
 
-    function replayIntroTheater() {
+    function replayIntroTheater(e) {
+      if (e && e.stopPropagation) e.stopPropagation();
       introDone = false;
       if (theater) theater.classList.remove('theater-closed');
 
       if (theaterVid) {
         theaterVid.currentTime = 0;
         theaterVid.muted = !isAudioOn;
-        theaterVid.volume = 1.0;
+        theaterVid.volume = isAudioOn ? 1.0 : 0.0;
         theaterVid.play().then(() => {
           updateAudioHud(isAudioOn);
         }).catch(e => {
@@ -1585,28 +1582,39 @@
       triggerToast('Playing Sri Yesaswi Traders logo animation full-screen...', 'info');
     }
 
-    function toggleAudio() {
-      const targetState = !isAudioOn;
+    function toggleAudio(e) {
+      if (e && e.stopPropagation) e.stopPropagation();
+
+      isAudioOn = !isAudioOn;
+
+      // Apply to card video
       if (cardVid) {
-        cardVid.muted = !targetState;
-        if (targetState) {
-          cardVid.volume = 1.0;
+        cardVid.muted = !isAudioOn;
+        cardVid.volume = isAudioOn ? 1.0 : 0.0;
+        if (isAudioOn && cardVid.paused) {
           cardVid.play().catch(() => {});
         }
       }
+
+      // Apply to theater video
       if (theaterVid) {
-        theaterVid.muted = !targetState;
-        if (targetState) {
-          theaterVid.volume = 1.0;
+        theaterVid.muted = !isAudioOn;
+        theaterVid.volume = isAudioOn ? 1.0 : 0.0;
+        if (isAudioOn && theaterVid.paused && !introDone) {
           theaterVid.play().catch(() => {});
         }
       }
-      const ctx = getAudioContext();
-      if (ctx && ctx.state === 'suspended' && targetState) {
-        ctx.resume().catch(() => {});
+
+      // Resume audio context
+      if (isAudioOn) {
+        const ctx = getAudioContext();
+        if (ctx && ctx.state === 'suspended') {
+          ctx.resume().catch(() => {});
+        }
       }
-      updateAudioHud(targetState);
-      triggerToast(targetState ? '🔊 Audio Enabled (Full Sound)' : '🔇 Audio Muted', 'info');
+
+      updateAudioHud(isAudioOn);
+      triggerToast(isAudioOn ? '🔊 Audio Unmuted (Full Sound)' : '🔇 Audio Muted', 'info');
     }
 
     // Passive motion & focus triggers for audio
