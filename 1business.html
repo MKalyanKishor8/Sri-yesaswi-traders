@@ -2087,6 +2087,14 @@
       const overlay = document.getElementById('introSplashOverlay');
       const video = document.getElementById('introLogoVideo');
 
+      if (video) {
+        try {
+          video.pause();
+          video.muted = true;
+          video.volume = 0;
+        } catch (e) {}
+      }
+
       if (overlay) {
         overlay.classList.add('is-hidden');
         // Stop video playback and cleanup after transition completes

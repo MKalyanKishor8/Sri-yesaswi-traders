@@ -1517,16 +1517,16 @@
     }
 
     function forceUnmute() {
-      const activeVideo = (!introDone && theaterVid) ? theaterVid : cardVid;
-      if (activeVideo) {
-        activeVideo.muted = false;
-        activeVideo.volume = 1.0;
-        activeVideo.play().catch(() => {});
+      // ONLY unmute during the logo intro animation
+      if (!introDone && theaterVid) {
+        theaterVid.muted = false;
+        theaterVid.volume = 1.0;
+        theaterVid.play().catch(() => {});
         const ctx = getAudioContext();
         if (ctx && ctx.state === 'suspended') {
           ctx.resume().catch(() => {});
         }
-        if (!activeVideo.muted) {
+        if (!theaterVid.muted) {
           updateAudioHud(true);
         }
       }
@@ -1541,20 +1541,24 @@
       introDone = true;
       if (theater) theater.classList.add('theater-closed');
 
-      // Stop theater video once intro ends
+      // Stop theater video & remove sound immediately
       if (theaterVid) {
         try {
           theaterVid.pause();
           theaterVid.muted = true;
+          theaterVid.volume = 0;
         } catch(e) {}
       }
 
-      // Ensure card logo video continues playing in loop
+      // Card logo video must play SILENTLY in loop (sound removed after intro)
       if (cardVid) {
-        cardVid.muted = !isAudioOn;
-        cardVid.volume = isAudioOn ? 1.0 : 0.0;
+        cardVid.muted = true;
+        cardVid.volume = 0;
         cardVid.play().catch(e => console.warn('Card video play:', e));
       }
+
+      // Turn off audio HUD indicator after intro completes
+      updateAudioHud(false);
     }
 
     function replayIntroTheater(e) {
@@ -1564,10 +1568,10 @@
 
       if (theaterVid) {
         theaterVid.currentTime = 0;
-        theaterVid.muted = !isAudioOn;
-        theaterVid.volume = isAudioOn ? 1.0 : 0.0;
+        theaterVid.muted = false;
+        theaterVid.volume = 1.0;
         theaterVid.play().then(() => {
-          updateAudioHud(isAudioOn);
+          updateAudioHud(true);
         }).catch(e => {
           theaterVid.muted = true;
           theaterVid.play().catch(err => console.warn(err));
@@ -1579,7 +1583,7 @@
           if (!introDone) closeIntroTheater();
         }, (durationSec + 0.6) * 1000);
       }
-      triggerToast('Playing Sri Yesaswi Traders logo animation full-screen...', 'info');
+      triggerToast('Playing Sri Yesaswi Traders logo animation full-screen with sound...', 'info');
     }
 
     function toggleAudio(e) {
@@ -1587,21 +1591,17 @@
 
       isAudioOn = !isAudioOn;
 
-      // Apply to card video
-      if (cardVid) {
+      if (!introDone && theaterVid) {
+        theaterVid.muted = !isAudioOn;
+        theaterVid.volume = isAudioOn ? 1.0 : 0.0;
+        if (isAudioOn && theaterVid.paused) {
+          theaterVid.play().catch(() => {});
+        }
+      } else if (introDone && cardVid) {
         cardVid.muted = !isAudioOn;
         cardVid.volume = isAudioOn ? 1.0 : 0.0;
         if (isAudioOn && cardVid.paused) {
           cardVid.play().catch(() => {});
-        }
-      }
-
-      // Apply to theater video
-      if (theaterVid) {
-        theaterVid.muted = !isAudioOn;
-        theaterVid.volume = isAudioOn ? 1.0 : 0.0;
-        if (isAudioOn && theaterVid.paused && !introDone) {
-          theaterVid.play().catch(() => {});
         }
       }
 
@@ -1614,10 +1614,10 @@
       }
 
       updateAudioHud(isAudioOn);
-      triggerToast(isAudioOn ? '🔊 Audio Unmuted (Full Sound)' : '🔇 Audio Muted', 'info');
+      triggerToast(isAudioOn ? '🔊 Audio Unmuted' : '🔇 Audio Muted', 'info');
     }
 
-    // Passive motion & focus triggers for audio
+    // Passive motion & focus triggers for audio during intro
     const passiveAudioTriggers = ['pointermove', 'mousemove', 'mouseenter', 'mouseover', 'wheel', 'scroll', 'focus', 'visibilitychange', 'pointerdown', 'touchstart', 'mousedown', 'keydown', 'click'];
     passiveAudioTriggers.forEach(evt => {
       window.addEventListener(evt, forceUnmute, { passive: true });
