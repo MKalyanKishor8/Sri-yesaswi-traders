@@ -234,16 +234,16 @@
       align-items: center;
       justify-content: center;
       background-color: #030812;
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-      transition: opacity 0.65s var(--ease-smooth), visibility 0.65s var(--ease-smooth);
-    }
-
-    .cinematic-intro-theater.theater-open {
       opacity: 1;
       visibility: visible;
-      pointer-events: auto;
+      transition: opacity 0.85s var(--ease-smooth), transform 0.85s var(--ease-smooth), visibility 0.85s var(--ease-smooth);
+    }
+
+    .cinematic-intro-theater.theater-closed {
+      opacity: 0;
+      transform: scale(1.05);
+      visibility: hidden;
+      pointer-events: none;
     }
 
     .intro-video-element {
@@ -1465,11 +1465,12 @@
     renderParticles();
 
     // --------------------------------------------------------------------------
-    // 2. EMBEDDED LOGO VIDEO & INSTANT LOGIN DISPLAY (logo1.mp4)
+    // 2. CINEMATIC VIDEO INTRO & LOGIN CARD ANIMATION (logo1.mp4)
     // --------------------------------------------------------------------------
     const theater = document.getElementById('introTheater');
     const theaterVid = document.getElementById('theaterVideo');
     const cardVid = document.getElementById('cardLogoVideo');
+    let introDone = false;
     let isAudioOn = true;
     let audioCtx = null;
 
@@ -1521,7 +1522,7 @@
     }
 
     function forceUnmute() {
-      const activeVideo = (theater && theater.classList.contains('theater-open')) ? theaterVid : cardVid;
+      const activeVideo = (!introDone && theaterVid) ? theaterVid : cardVid;
       if (activeVideo) {
         activeVideo.muted = false;
         activeVideo.volume = 1.0;
@@ -1541,38 +1542,47 @@
     }
 
     function closeIntroTheater() {
-      if (theater) theater.classList.remove('theater-open');
+      if (introDone) return;
+      introDone = true;
+      if (theater) theater.classList.add('theater-closed');
+
+      // Stop theater video once intro ends
       if (theaterVid) {
         try {
           theaterVid.pause();
           theaterVid.muted = true;
         } catch(e) {}
       }
+
+      // Ensure card logo video continues playing in loop
       if (cardVid) {
+        cardVid.muted = true;
         cardVid.play().catch(e => console.warn('Card video play:', e));
       }
     }
 
     function replayIntroTheater() {
-      if (!theater) return;
-      theater.classList.add('theater-open');
+      introDone = false;
+      if (theater) theater.classList.remove('theater-closed');
 
       if (theaterVid) {
         theaterVid.currentTime = 0;
         theaterVid.muted = !isAudioOn;
         theaterVid.volume = 1.0;
-        theaterVid.play().catch(e => {
+        theaterVid.play().then(() => {
+          updateAudioHud(isAudioOn);
+        }).catch(e => {
           theaterVid.muted = true;
           theaterVid.play().catch(err => console.warn(err));
         });
-      }
-      triggerToast('Playing Sri Yesaswi Traders logo animation full-screen...', 'info');
 
-      if (theaterVid) {
         theaterVid.addEventListener('ended', closeIntroTheater, { once: true });
         const durationSec = (theaterVid.duration && !isNaN(theaterVid.duration) && theaterVid.duration > 0) ? theaterVid.duration : 10;
-        setTimeout(() => closeIntroTheater(), (durationSec + 0.6) * 1000);
+        setTimeout(() => {
+          if (!introDone) closeIntroTheater();
+        }, (durationSec + 0.6) * 1000);
       }
+      triggerToast('Playing Sri Yesaswi Traders logo animation full-screen...', 'info');
     }
 
     function toggleAudio() {
@@ -1599,26 +1609,12 @@
       triggerToast(targetState ? '🔊 Audio Enabled (Full Sound)' : '🔇 Audio Muted', 'info');
     }
 
-    // Auto-unmute on ANY passive motion/scroll/hover/focus
+    // Passive motion & focus triggers for audio
     const passiveAudioTriggers = ['pointermove', 'mousemove', 'mouseenter', 'mouseover', 'wheel', 'scroll', 'focus', 'visibilitychange', 'pointerdown', 'touchstart', 'mousedown', 'keydown', 'click'];
     passiveAudioTriggers.forEach(evt => {
       window.addEventListener(evt, forceUnmute, { passive: true });
       document.addEventListener(evt, forceUnmute, { passive: true });
     });
-
-    // Auto-play and un-mute continuously on initial load
-    let autoUnmuteAttempts = 0;
-    const autoUnmuteTimer = setInterval(() => {
-      autoUnmuteAttempts++;
-      if (cardVid) {
-        if (cardVid.paused) {
-          cardVid.play().catch(() => {});
-        }
-      }
-      if (autoUnmuteAttempts > 25) {
-        clearInterval(autoUnmuteTimer);
-      }
-    }, 120);
 
     // --------------------------------------------------------------------------
     // 3. TABS & FORM INTERACTIONS
@@ -1900,20 +1896,44 @@
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
 
-      // Start playing the card video immediately on page load with zero lag
-      if (cardVid) {
-        cardVid.muted = false;
-        cardVid.volume = 1.0;
-        const playPromise = cardVid.play();
+      // 1. Play full-screen cinematic intro animation automatically on entrance
+      if (theaterVid) {
+        theaterVid.muted = false;
+        theaterVid.volume = 1.0;
+
+        const playPromise = theaterVid.play();
         if (playPromise !== undefined) {
           playPromise.then(() => {
             updateAudioHud(true);
           }).catch(err => {
-            console.warn('Card video initial play:', err);
-            cardVid.muted = true;
-            cardVid.play().catch(e => console.warn(e));
+            console.warn('Initial unmuted autoplay restricted by browser; playing and awaiting motion:', err);
+            theaterVid.muted = true;
+            theaterVid.play().catch(e => console.warn(e));
           });
         }
+
+        // When the logo video finishes playing, automatically transition to login portal card
+        theaterVid.addEventListener('ended', closeIntroTheater, { once: true });
+
+        // Safe fallback timer based on video duration
+        theaterVid.addEventListener('loadedmetadata', () => {
+          const durMs = ((theaterVid.duration && !isNaN(theaterVid.duration) && theaterVid.duration > 0) ? theaterVid.duration : 10) * 1000 + 600;
+          setTimeout(() => {
+            if (!introDone) closeIntroTheater();
+          }, durMs);
+        }, { once: true });
+
+        setTimeout(() => {
+          if (!introDone) closeIntroTheater();
+        }, 11500);
+      } else {
+        closeIntroTheater();
+      }
+
+      // Pre-warm card video
+      if (cardVid) {
+        cardVid.muted = true;
+        cardVid.play().catch(() => {});
       }
     });
   </script>
