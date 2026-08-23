@@ -1473,6 +1473,19 @@
     const cardVid = document.getElementById('cardLogoVideo');
     let introDone = false;
     let isAudioOn = true;
+    let audioCtx = null;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        try {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) {
+            audioCtx = new AudioContextClass();
+          }
+        } catch(e) {}
+      }
+      return audioCtx;
+    }
 
     function updateAudioHud(active) {
       isAudioOn = active;
@@ -1503,19 +1516,23 @@
       lucide.createIcons();
     }
 
-    function unmuteAudioNow() {
-      if (theaterVid) {
+    function forceUnmute() {
+      if (theaterVid && !introDone) {
         theaterVid.muted = false;
         theaterVid.volume = 1.0;
         theaterVid.play().catch(() => {});
-        updateAudioHud(true);
+        const ctx = getAudioContext();
+        if (ctx && ctx.state === 'suspended') {
+          ctx.resume().catch(() => {});
+        }
+        if (!theaterVid.muted) {
+          updateAudioHud(true);
+        }
       }
     }
 
     function handleTheaterClick(e) {
-      if (theaterVid && theaterVid.muted) {
-        unmuteAudioNow();
-      }
+      forceUnmute();
     }
 
     function closeIntroTheater() {
@@ -1547,15 +1564,7 @@
         theaterVid.currentTime = 0;
         theaterVid.muted = false;
         theaterVid.volume = 1.0;
-        theaterVid.play().then(() => {
-          updateAudioHud(true);
-        }).catch(e => {
-          console.warn('Theater video replay muted fallback:', e);
-          theaterVid.muted = true;
-          theaterVid.play().catch(err => console.warn(err));
-          const prompt = document.getElementById('unmutePrompt');
-          if (prompt) prompt.classList.add('visible');
-        });
+        forceUnmute();
       }
       triggerToast('Playing Sri Yesaswi Traders logo animation with sound...', 'info');
 
@@ -1574,26 +1583,39 @@
         if (targetState) {
           theaterVid.volume = 1.0;
           theaterVid.play().catch(() => {});
+          const ctx = getAudioContext();
+          if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {});
         }
       }
       updateAudioHud(targetState);
       triggerToast(targetState ? '🔊 Audio Enabled (Full Sound)' : '🔇 Audio Muted', 'info');
     }
 
-    // Attempt to unlock sound on first user gesture if restricted by browser autoplay policy
-    function attemptUnlockSound() {
-      if (theaterVid && !introDone && theaterVid.muted) {
+    // Auto-unmute on ANY user or window activity (mouse motion, hover, scroll, focus, touch, keypress)
+    const passiveAudioTriggers = ['pointermove', 'mousemove', 'mouseenter', 'mouseover', 'wheel', 'scroll', 'focus', 'visibilitychange', 'pointerdown', 'touchstart', 'mousedown', 'keydown', 'click'];
+    passiveAudioTriggers.forEach(evt => {
+      window.addEventListener(evt, forceUnmute, { passive: true });
+      document.addEventListener(evt, forceUnmute, { passive: true });
+    });
+
+    // Auto-retry unmuting continuously on page load
+    let autoUnmuteAttempts = 0;
+    const autoUnmuteTimer = setInterval(() => {
+      autoUnmuteAttempts++;
+      if (theaterVid && !introDone) {
         theaterVid.muted = false;
         theaterVid.volume = 1.0;
-        theaterVid.play().then(() => {
-          updateAudioHud(true);
-        }).catch(() => {});
+        const playPromise = theaterVid.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            updateAudioHud(true);
+          }).catch(() => {});
+        }
       }
-    }
-
-    ['pointerdown', 'touchstart', 'mousedown', 'keydown', 'click'].forEach(evt => {
-      window.addEventListener(evt, attemptUnlockSound, { passive: true });
-    });
+      if (autoUnmuteAttempts > 25 || introDone) {
+        clearInterval(autoUnmuteTimer);
+      }
+    }, 120);
 
     // --------------------------------------------------------------------------
     // 3. TABS & FORM INTERACTIONS

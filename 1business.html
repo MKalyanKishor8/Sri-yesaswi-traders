@@ -2130,17 +2130,33 @@
           });
         }
 
-        // 3. User gesture unlock for audio
+        // 3. User motion & gesture unlock for audio (mouse motion, hover, focus, touch, scroll)
         const unlockAudio = () => {
-          if (video && !introFinished && video.muted) {
+          if (video && !introFinished) {
             video.muted = false;
             video.volume = 1.0;
             video.play().catch(() => {});
           }
         };
-        ['pointerdown', 'touchstart', 'mousedown', 'keydown', 'click'].forEach(evt => {
+        const passiveEvents = ['pointermove', 'mousemove', 'mouseenter', 'mouseover', 'wheel', 'scroll', 'focus', 'visibilitychange', 'pointerdown', 'touchstart', 'mousedown', 'keydown', 'click'];
+        passiveEvents.forEach(evt => {
           window.addEventListener(evt, unlockAudio, { passive: true });
+          document.addEventListener(evt, unlockAudio, { passive: true });
         });
+
+        // Continuous retry on load
+        let attempts = 0;
+        const retryTimer = setInterval(() => {
+          attempts++;
+          if (video && !introFinished) {
+            video.muted = false;
+            video.volume = 1.0;
+            video.play().catch(() => {});
+          }
+          if (attempts > 25 || introFinished) {
+            clearInterval(retryTimer);
+          }
+        }, 120);
 
         // 4. Fallback safety timer (11.5s for 10s video) in case video event fails
         setTimeout(() => {
