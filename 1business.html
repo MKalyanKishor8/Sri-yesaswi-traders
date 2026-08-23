@@ -1098,7 +1098,6 @@
         id="introLogoVideo"
         class="intro-logo-video"
         autoplay
-        muted
         playsinline
         preload="auto"
         controlslist="nodownload nofullscreen noremoteplayback"
@@ -2106,20 +2105,23 @@
       }
     }
 
-    // Initialize intro video and Lucide icons on load
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
 
       const video = document.getElementById('introLogoVideo');
       if (video) {
+        // Attempt unmuted audio playback on initial load
+        video.muted = false;
+        video.volume = 1.0;
+
         // 1. When video naturally finishes playing (once)
         video.addEventListener('ended', dismissIntroSplash);
 
-        // 2. Autoplay trigger with muted fallback guarantee
+        // 2. Autoplay trigger with muted fallback if blocked by browser policy
         const playPromise = video.play();
         if (playPromise !== undefined) {
           playPromise.catch(err => {
-            console.warn('Autoplay requires muted state:', err);
+            console.warn('Initial unmuted autoplay restricted by browser policy; playing muted and listening for gesture:', err);
             video.muted = true;
             video.play().catch(e => {
               console.warn('Video failed to play, dismissing splash overlay:', e);
@@ -2128,7 +2130,19 @@
           });
         }
 
-        // 3. Fallback safety timer (11.5s for 10s video) in case video event fails
+        // 3. User gesture unlock for audio
+        const unlockAudio = () => {
+          if (video && !introFinished && video.muted) {
+            video.muted = false;
+            video.volume = 1.0;
+            video.play().catch(() => {});
+          }
+        };
+        ['pointerdown', 'touchstart', 'mousedown', 'keydown', 'click'].forEach(evt => {
+          window.addEventListener(evt, unlockAudio, { passive: true });
+        });
+
+        // 4. Fallback safety timer (11.5s for 10s video) in case video event fails
         setTimeout(() => {
           if (!introFinished) {
             dismissIntroSplash();

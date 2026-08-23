@@ -286,6 +286,66 @@
       box-shadow: 0 12px 35px rgba(212, 175, 55, 0.45);
     }
 
+    .theater-audio-btn {
+      position: absolute;
+      bottom: 35px;
+      left: 35px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: rgba(8, 20, 38, 0.85);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--gold-border);
+      padding: 0.65rem 1.4rem;
+      border-radius: 40px;
+      color: var(--gold-light);
+      font-family: var(--font-ui);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.25);
+      transition: all 0.3s var(--ease-smooth);
+      z-index: 90;
+    }
+
+    .theater-audio-btn:hover, .theater-audio-btn.active {
+      background: rgba(212, 175, 55, 0.35);
+      border-color: var(--gold-shimmer);
+      color: #ffffff;
+      box-shadow: 0 10px 30px rgba(212, 175, 55, 0.4);
+    }
+
+    .theater-unmute-prompt {
+      position: absolute;
+      top: 35px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      align-items: center;
+      gap: 0.65rem;
+      background: linear-gradient(135deg, #d4af37, #fbe696);
+      color: #050b14;
+      padding: 0.6rem 1.4rem;
+      border-radius: 30px;
+      font-family: var(--font-ui);
+      font-size: 0.86rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 25px rgba(212, 175, 55, 0.7);
+      animation: pulseGlow 2s infinite ease-in-out;
+      z-index: 95;
+    }
+
+    .theater-unmute-prompt.visible {
+      display: inline-flex;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { transform: translateX(-50%) scale(1); box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 20px rgba(212, 175, 55, 0.4); }
+      50% { transform: translateX(-50%) scale(1.05); box-shadow: 0 14px 35px rgba(0,0,0,0.7), 0 0 35px rgba(212, 175, 55, 0.9); }
+    }
+
     /* ==========================================================================
        MAIN LOGIN CARD & INTEGRATED VIDEO LOGO ANIMATION (logo.mp4)
        ========================================================================== */
@@ -945,12 +1005,11 @@
   <!-- ========================================================================
        CINEMATIC FULL-SCREEN INTRO THEATER (Plays on first visit / on replay)
        ======================================================================== -->
-  <div id="introTheater" class="cinematic-intro-theater">
+  <div id="introTheater" class="cinematic-intro-theater" onclick="handleTheaterClick(event)">
     <video
       id="theaterVideo"
       class="intro-video-element"
       autoplay
-      muted
       playsinline
       preload="auto"
       controlslist="nodownload nofullscreen noremoteplayback"
@@ -962,7 +1021,19 @@
       <source src="logo.mp4" type="video/mp4" />
     </video>
 
-    <button class="theater-skip-btn" onclick="closeIntroTheater()">
+    <!-- Floating Audio Toggle Button inside Theater -->
+    <button class="theater-audio-btn" id="theaterAudioBtn" onclick="event.stopPropagation(); toggleAudio()" title="Toggle Video Sound">
+      <i data-lucide="volume-2" id="theaterAudioIcon" style="width:16px;height:16px;"></i>
+      <span id="theaterAudioText">Sound On</span>
+    </button>
+
+    <!-- Unmute prompt banner if browser blocks autoplay audio -->
+    <div id="unmutePrompt" class="theater-unmute-prompt" onclick="event.stopPropagation(); unmuteAudioNow()">
+      <i data-lucide="volume-2" style="width:18px;height:18px;"></i>
+      <span>Tap anywhere for Sound 🔊</span>
+    </div>
+
+    <button class="theater-skip-btn" onclick="event.stopPropagation(); closeIntroTheater()">
       <span>Enter Portal</span>
       <i data-lucide="arrow-right" style="width:16px;height:16px;"></i>
     </button>
@@ -1401,23 +1472,49 @@
     const theaterVid = document.getElementById('theaterVideo');
     const cardVid = document.getElementById('cardLogoVideo');
     let introDone = false;
-    let introSoundPlayed = false;
+    let isAudioOn = true;
 
     function updateAudioHud(active) {
+      isAudioOn = active;
       const icon = document.getElementById('audioIcon');
       const label = document.getElementById('audioLabel');
       const btn = document.getElementById('audioBtn');
-      if (btn && icon && label) {
-        if (active) {
-          btn.classList.add('active');
-          icon.setAttribute('data-lucide', 'volume-2');
-          label.textContent = 'Audio On';
-        } else {
-          btn.classList.remove('active');
-          icon.setAttribute('data-lucide', 'volume-x');
-          label.textContent = 'Sound';
-        }
-        lucide.createIcons();
+      const theaterBtn = document.getElementById('theaterAudioBtn');
+      const theaterIcon = document.getElementById('theaterAudioIcon');
+      const theaterLabel = document.getElementById('theaterAudioText');
+      const prompt = document.getElementById('unmutePrompt');
+
+      if (active) {
+        if (btn) btn.classList.add('active');
+        if (icon) icon.setAttribute('data-lucide', 'volume-2');
+        if (label) label.textContent = 'Audio On';
+        if (theaterBtn) theaterBtn.classList.add('active');
+        if (theaterIcon) theaterIcon.setAttribute('data-lucide', 'volume-2');
+        if (theaterLabel) theaterLabel.textContent = 'Sound On';
+        if (prompt) prompt.classList.remove('visible');
+      } else {
+        if (btn) btn.classList.remove('active');
+        if (icon) icon.setAttribute('data-lucide', 'volume-x');
+        if (label) label.textContent = 'Sound Off';
+        if (theaterBtn) theaterBtn.classList.remove('active');
+        if (theaterIcon) theaterIcon.setAttribute('data-lucide', 'volume-x');
+        if (theaterLabel) theaterLabel.textContent = 'Muted';
+      }
+      lucide.createIcons();
+    }
+
+    function unmuteAudioNow() {
+      if (theaterVid) {
+        theaterVid.muted = false;
+        theaterVid.volume = 1.0;
+        theaterVid.play().catch(() => {});
+        updateAudioHud(true);
+      }
+    }
+
+    function handleTheaterClick(e) {
+      if (theaterVid && theaterVid.muted) {
+        unmuteAudioNow();
       }
     }
 
@@ -1456,9 +1553,12 @@
           console.warn('Theater video replay muted fallback:', e);
           theaterVid.muted = true;
           theaterVid.play().catch(err => console.warn(err));
+          const prompt = document.getElementById('unmutePrompt');
+          if (prompt) prompt.classList.add('visible');
         });
       }
-      
+      triggerToast('Playing Sri Yesaswi Traders logo animation with sound...', 'info');
+
       // Auto close after video completes
       theaterVid.addEventListener('ended', closeIntroTheater, { once: true });
       const durationSec = (theaterVid && theaterVid.duration && !isNaN(theaterVid.duration) && theaterVid.duration > 0) ? theaterVid.duration : 10;
@@ -1467,35 +1567,33 @@
       }, (durationSec + 0.6) * 1000);
     }
 
-    let isAudioOn = false;
     function toggleAudio() {
-      isAudioOn = !isAudioOn;
-      if (theaterVid && !introDone) {
-        theaterVid.muted = !isAudioOn;
+      const targetState = !isAudioOn;
+      if (theaterVid) {
+        theaterVid.muted = !targetState;
+        if (targetState) {
+          theaterVid.volume = 1.0;
+          theaterVid.play().catch(() => {});
+        }
       }
-      if (cardVid) {
-        cardVid.muted = !isAudioOn;
-      }
-
-      updateAudioHud(isAudioOn);
-      triggerToast(isAudioOn ? 'Audio Unmuted' : 'Audio Muted', 'info');
+      updateAudioHud(targetState);
+      triggerToast(targetState ? '🔊 Audio Enabled (Full Sound)' : '🔇 Audio Muted', 'info');
     }
 
     // Attempt to unlock sound on first user gesture if restricted by browser autoplay policy
     function attemptUnlockSound() {
-      if (!introSoundPlayed && theaterVid && !introDone) {
+      if (theaterVid && !introDone && theaterVid.muted) {
         theaterVid.muted = false;
         theaterVid.volume = 1.0;
         theaterVid.play().then(() => {
-          introSoundPlayed = true;
           updateAudioHud(true);
         }).catch(() => {});
       }
     }
 
-    window.addEventListener('pointerdown', attemptUnlockSound, { once: true });
-    window.addEventListener('keydown', attemptUnlockSound, { once: true });
-    window.addEventListener('touchstart', attemptUnlockSound, { once: true });
+    ['pointerdown', 'touchstart', 'mousedown', 'keydown', 'click'].forEach(evt => {
+      window.addEventListener(evt, attemptUnlockSound, { passive: true });
+    });
 
     // --------------------------------------------------------------------------
     // 3. TABS & FORM INTERACTIONS
@@ -1785,12 +1883,14 @@
         const playPromise = theaterVid.play();
         if (playPromise !== undefined) {
           playPromise.then(() => {
-            introSoundPlayed = true;
             updateAudioHud(true);
           }).catch(err => {
             console.warn('Initial unmuted autoplay restricted by browser policy; awaiting first tap:', err);
             theaterVid.muted = true;
             theaterVid.play().catch(e => console.warn(e));
+            updateAudioHud(false);
+            const prompt = document.getElementById('unmutePrompt');
+            if (prompt) prompt.classList.add('visible');
           });
         }
 
