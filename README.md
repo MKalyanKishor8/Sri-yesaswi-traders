@@ -23,6 +23,7 @@ Sri Yesaswi Traders is a direct farm-source bulk commodity exporter supplying to
 | `1business.html` | Main corporate website — product catalog, services, contact, RFQ form |
 | `auth.html` | Premium B2B login & enterprise registration portal (Forbes-level design) |
 | `firebase-config.js` | Firebase Auth & Cloud Firestore database integration |
+| `logo1.mp4` | Cinematic animated trade logo video used for login portal and intro splash |
 | `auth_hero.jpg` | Brand hero image for the login page |
 
 ---

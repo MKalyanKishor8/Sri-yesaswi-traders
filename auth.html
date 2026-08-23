@@ -957,6 +957,7 @@
       disablepictureinpicture
       oncontextmenu="return false;"
     >
+      <source src="logo1.mp4" type="video/mp4" />
       <source src="logo_h264.mp4" type="video/mp4" />
       <source src="logo.mp4" type="video/mp4" />
     </video>
@@ -968,12 +969,12 @@
   </div>
 
   <!-- ========================================================================
-       MAIN LOGIN CARD WITH ACTIVE EMBEDDED LOGO VIDEO ANIMATION (logo.mp4)
+       MAIN LOGIN CARD WITH ACTIVE EMBEDDED LOGO VIDEO ANIMATION (logo1.mp4)
        ======================================================================== -->
   <main class="portal-workspace-stage">
     <div class="portal-master-card">
 
-      <!-- Integrated logo.mp4 Video Animation Banner -->
+      <!-- Integrated logo1.mp4 Video Animation Banner -->
       <div class="card-video-hero" onclick="replayIntroTheater()" title="Click to watch full-screen cinematic logo animation">
         <video
           id="cardLogoVideo"
@@ -987,6 +988,7 @@
           disablepictureinpicture
           oncontextmenu="return false;"
         >
+          <source src="logo1.mp4" type="video/mp4" />
           <source src="logo_h264.mp4" type="video/mp4" />
           <source src="logo.mp4" type="video/mp4" />
         </video>
@@ -1456,12 +1458,13 @@
           theaterVid.play().catch(err => console.warn(err));
         });
       }
-      triggerToast('Playing Sri Yesaswi Traders logo animation with sound...', 'info');
-
-      // Auto close after video completes (2.85s)
+      
+      // Auto close after video completes
+      theaterVid.addEventListener('ended', closeIntroTheater, { once: true });
+      const durationSec = (theaterVid && theaterVid.duration && !isNaN(theaterVid.duration) && theaterVid.duration > 0) ? theaterVid.duration : 10;
       setTimeout(() => {
         if (!introDone) closeIntroTheater();
-      }, 3000);
+      }, (durationSec + 0.6) * 1000);
     }
 
     let isAudioOn = false;
@@ -1791,11 +1794,24 @@
           });
         }
 
-        // Close intro theater after single intro animation completes (2.85s)
+        // Close intro theater when video ends
         theaterVid.addEventListener('ended', closeIntroTheater, { once: true });
-        setTimeout(() => {
-          if (!introDone) closeIntroTheater();
-        }, 2950);
+        
+        const handleDurationFallback = () => {
+          const durMs = ((theaterVid.duration && !isNaN(theaterVid.duration) && theaterVid.duration > 0) ? theaterVid.duration : 10) * 1000 + 600;
+          setTimeout(() => {
+            if (!introDone) closeIntroTheater();
+          }, durMs);
+        };
+
+        if (theaterVid.readyState >= 1) {
+          handleDurationFallback();
+        } else {
+          theaterVid.addEventListener('loadedmetadata', handleDurationFallback, { once: true });
+          setTimeout(() => {
+            if (!introDone) closeIntroTheater();
+          }, 11500);
+        }
       } else {
         closeIntroTheater();
       }
